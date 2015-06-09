@@ -14,6 +14,7 @@
 		82C835F61B26356700DCFE1D /* Images.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = 82C835F51B26356700DCFE1D /* Images.xcassets */; };
 		82C835F91B26356700DCFE1D /* LaunchScreen.xib in Resources */ = {isa = PBXBuildFile; fileRef = 82C835F71B26356700DCFE1D /* LaunchScreen.xib */; };
 		82C836051B26356700DCFE1D /* First_SceneTests.m in Sources */ = {isa = PBXBuildFile; fileRef = 82C836041B26356700DCFE1D /* First_SceneTests.m */; };
+		82C8360F1B26363500DCFE1D /* SceneKit.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 82C8360E1B26363500DCFE1D /* SceneKit.framework */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXContainerItemProxy section */
@@ -40,6 +41,7 @@
 		82C835FE1B26356700DCFE1D /* First_SceneTests.xctest */ = {isa = PBXFileReference; explicitFileType = wrapper.cfbundle; includeInIndex = 0; path = First_SceneTests.xctest; sourceTree = BUILT_PRODUCTS_DIR; };
 		82C836031B26356700DCFE1D /* Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist.xml; path = Info.plist; sourceTree = "<group>"; };
 		82C836041B26356700DCFE1D /* First_SceneTests.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = First_SceneTests.m; sourceTree = "<group>"; };
+		82C8360E1B26363500DCFE1D /* SceneKit.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = SceneKit.framework; path = System/Library/Frameworks/SceneKit.framework; sourceTree = SDKROOT; };
 /* End PBXFileReference section */
 
 /* Begin PBXFrameworksBuildPhase section */
@@ -47,6 +49,7 @@
 			isa = PBXFrameworksBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				82C8360F1B26363500DCFE1D /* SceneKit.framework in Frameworks */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -63,6 +66,7 @@
 		82C835DC1B26356700DCFE1D = {
 			isa = PBXGroup;
 			children = (
+				82C8360E1B26363500DCFE1D /* SceneKit.framework */,
 				82C835E71B26356700DCFE1D /* First_Scene */,
 				82C836011B26356700DCFE1D /* First_SceneTests */,
 				82C835E61B26356700DCFE1D /* Products */,
