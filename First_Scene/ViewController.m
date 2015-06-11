@@ -106,53 +106,59 @@
     [self.myScnView.scene.rootNode addChildNode: ambienLightNode];
 }
 - (IBAction)animation:(id)sender {
-    CABasicAnimation *grow = [CABasicAnimation animationWithKeyPath:@"geometry.height"];
-    grow.fromValue = @0.5;
-    // ... and the position
-    CABasicAnimation *move = [CABasicAnimation animationWithKeyPath:@"position.y"];
-    move.fromValue = @10;
     
-    // group both animations
-    CAAnimationGroup *growGroup = [CAAnimationGroup animation];
-    growGroup.animations = @[grow, move];
-    growGroup.duration   = 1.0;
-    growGroup.beginTime  = CACurrentMediaTime();
-    growGroup.timingFunction = [CAMediaTimingFunction functionWithName:kCAMediaTimingFunctionEaseInEaseOut];
-    growGroup.fillMode = kCAFillModeBackwards;
-    
-    
-    // animate the rotation of the chart
-    CABasicAnimation *rotateBox = [CABasicAnimation animationWithKeyPath:@"rotation.w"];
-    rotateBox.fromValue = @(0);
-    rotateBox.duration  = 1.0;
-    rotateBox.beginTime = CACurrentMediaTime();
-    rotateBox.fillMode  = kCAFillModeBackwards;
-    rotateBox.timingFunction = [CAMediaTimingFunction functionWithName:kCAMediaTimingFunctionEaseInEaseOut];
-    
-    CABasicAnimation *rotateCam = [CABasicAnimation animationWithKeyPath:@"position.z"];
-    rotateCam.toValue = @30;
-    rotateCam.duration = 1.0;
-    rotateCam.beginTime = CACurrentMediaTime();
-    rotateCam.fillMode = kCAFillModeForwards;
-    rotateCam.removedOnCompletion = NO;
-    rotateCam.timingFunction = [CAMediaTimingFunction functionWithName:kCAMediaTimingFunctionEaseInEaseOut];
-    
+    /*
+     * Basic animation added to the boxNode
+     */
+//    CABasicAnimation *grow = [CABasicAnimation animationWithKeyPath:@"geometry.height"];
+//    grow.fromValue = @0.5;
+//    // ... and the position
+//    CABasicAnimation *move = [CABasicAnimation animationWithKeyPath:@"position.y"];
+//    move.fromValue = @10;
+//    
+//    // group both animations
+//    CAAnimationGroup *growGroup = [CAAnimationGroup animation];
+//    growGroup.animations = @[grow, move];
+//    growGroup.duration   = 1.0;
+//    growGroup.beginTime  = CACurrentMediaTime();
+//    growGroup.timingFunction = [CAMediaTimingFunction functionWithName:kCAMediaTimingFunctionEaseInEaseOut];
+//    growGroup.fillMode = kCAFillModeBackwards;
+//    
+//    
+//    // animate the rotation of the chart
+//    CABasicAnimation *rotateBox = [CABasicAnimation animationWithKeyPath:@"rotation.w"];
+//    rotateBox.fromValue = @(0);
+//    rotateBox.duration  = 1.0;
+//    rotateBox.beginTime = CACurrentMediaTime();
+//    rotateBox.fillMode  = kCAFillModeBackwards;
+//    rotateBox.timingFunction = [CAMediaTimingFunction functionWithName:kCAMediaTimingFunctionEaseInEaseOut];
+//    
+//    CABasicAnimation *rotateCam = [CABasicAnimation animationWithKeyPath:@"position.z"];
+//    rotateCam.toValue = @30;
+//    rotateCam.duration = 1.0;
+//    rotateCam.beginTime = CACurrentMediaTime();
+//    rotateCam.fillMode = kCAFillModeForwards;
+//    rotateCam.removedOnCompletion = NO;
+//    rotateCam.timingFunction = [CAMediaTimingFunction functionWithName:kCAMediaTimingFunctionEaseInEaseOut];
 //    [boxNode addAnimation:growGroup forKey:@"testAnimation"];
 //    [boxNode addAnimation:rotateBox forKey:@"rotation"];
 //    [cameraNode addAnimation:rotateCam forKey:@"cameraRotation"];
     
     [self addGestureToBox];
     
+    /*
+     * Free camera control
+     */
 //    self.myScnView.allowsCameraControl = YES;
 }
 
 - (void)addGestureToBox
 {
     UIPanGestureRecognizer *recognizer = [[UIPanGestureRecognizer alloc] initWithTarget:self action:@selector(handlePan:)];
-    [[self view] addGestureRecognizer:recognizer];
+    [myScnView addGestureRecognizer:recognizer];
     
     UIPinchGestureRecognizer *pinch = [[UIPinchGestureRecognizer alloc] initWithTarget:self action:@selector(handlePinch:)];
-    [self.view addGestureRecognizer:pinch];
+    [myScnView addGestureRecognizer:pinch];
 }
 
 - (void)handlePan:(UIPanGestureRecognizer *)gesture
@@ -213,11 +219,38 @@
             return;
         }
         
-        NSLog(@"the value is \n\n%f", cameraZ*scale);
-        
         cameraNode.position = SCNVector3Make(cameraX, cameraY*scale, cameraZ*scale);
     }
 }
+
+- (void)touchesMoved:(NSSet *)touches withEvent:(UIEvent *)event
+{
+    UITouch *touch = [touches anyObject];
+    // Get the location of the click
+    CGPoint point = [touch locationInView: myScnView];
+    
+    // Get the hit on the cube
+    NSArray *hits = [myScnView hitTest:point options:@{SCNHitTestRootNodeKey: boxNode,
+                                                       SCNHitTestIgnoreChildNodesKey: @YES}];
+    SCNHitTestResult *hit = [hits firstObject];
+    SCNVector3 hitPosition = hit.worldCoordinates;
+    CGFloat hitPositionZ = [myScnView projectPoint: hitPosition].z;
+    // Record the original position of the node
+    CGFloat nodeX = hit.node.position.x;
+    CGFloat nodeY = hit.node.position.y;
+    CGFloat nodeZ = hit.node.position.z;
+    
+    CGPoint location = [touch locationInView:myScnView];
+    CGPoint prevLocation = [touch previousLocationInView:myScnView];
+    SCNVector3 location_3d = [myScnView unprojectPoint:SCNVector3Make(location.x, location.y, hitPositionZ)];
+    SCNVector3 prevLocation_3d = [myScnView unprojectPoint:SCNVector3Make(prevLocation.x, prevLocation.y, hitPositionZ)];
+
+    CGFloat x_varible = location_3d.x - prevLocation_3d.x;
+    CGFloat z_varible = location_3d.z - prevLocation_3d.z;
+
+    hit.node.position = SCNVector3Make(nodeX + x_varible, nodeY, nodeZ + z_varible);
+}
+
 
 - (void)didReceiveMemoryWarning {
     [super didReceiveMemoryWarning];
