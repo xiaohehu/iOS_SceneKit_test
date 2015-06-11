@@ -13,6 +13,10 @@
     SCNNode *boxNode;
     SCNNode *cameraNode;
     CGFloat lastRotation;
+    UIPanGestureRecognizer *panGesture;
+    UIPinchGestureRecognizer *pinchGesture;
+    BOOL    position;
+    BOOL    review;
 }
 @end
 
@@ -42,8 +46,7 @@
     SCNNode *floorNode = [SCNNode nodeWithGeometry:floor];
     floorNode.position = SCNVector3Make(0, -5, 0);
     [scene.rootNode addChildNode:floorNode];
-    
-    
+
     CGFloat boxSide = 10.0;
     SCNBox *box = [SCNBox boxWithWidth:boxSide
                                 height:boxSide
@@ -106,45 +109,20 @@
     [self.myScnView.scene.rootNode addChildNode: ambienLightNode];
 }
 - (IBAction)animation:(id)sender {
-    
-    /*
-     * Basic animation added to the boxNode
-     */
-//    CABasicAnimation *grow = [CABasicAnimation animationWithKeyPath:@"geometry.height"];
-//    grow.fromValue = @0.5;
-//    // ... and the position
-//    CABasicAnimation *move = [CABasicAnimation animationWithKeyPath:@"position.y"];
-//    move.fromValue = @10;
-//    
-//    // group both animations
-//    CAAnimationGroup *growGroup = [CAAnimationGroup animation];
-//    growGroup.animations = @[grow, move];
-//    growGroup.duration   = 1.0;
-//    growGroup.beginTime  = CACurrentMediaTime();
-//    growGroup.timingFunction = [CAMediaTimingFunction functionWithName:kCAMediaTimingFunctionEaseInEaseOut];
-//    growGroup.fillMode = kCAFillModeBackwards;
-//    
-//    
-//    // animate the rotation of the chart
-//    CABasicAnimation *rotateBox = [CABasicAnimation animationWithKeyPath:@"rotation.w"];
-//    rotateBox.fromValue = @(0);
-//    rotateBox.duration  = 1.0;
-//    rotateBox.beginTime = CACurrentMediaTime();
-//    rotateBox.fillMode  = kCAFillModeBackwards;
-//    rotateBox.timingFunction = [CAMediaTimingFunction functionWithName:kCAMediaTimingFunctionEaseInEaseOut];
-//    
-//    CABasicAnimation *rotateCam = [CABasicAnimation animationWithKeyPath:@"position.z"];
-//    rotateCam.toValue = @30;
-//    rotateCam.duration = 1.0;
-//    rotateCam.beginTime = CACurrentMediaTime();
-//    rotateCam.fillMode = kCAFillModeForwards;
-//    rotateCam.removedOnCompletion = NO;
-//    rotateCam.timingFunction = [CAMediaTimingFunction functionWithName:kCAMediaTimingFunctionEaseInEaseOut];
-//    [boxNode addAnimation:growGroup forKey:@"testAnimation"];
-//    [boxNode addAnimation:rotateBox forKey:@"rotation"];
-//    [cameraNode addAnimation:rotateCam forKey:@"cameraRotation"];
-    
-    [self addGestureToBox];
+    UIButton *tmpBtn = sender;
+    tmpBtn.selected = !tmpBtn.selected;
+    review = tmpBtn.selected;
+    if (review)
+    {
+        [self addGestureToBox];
+    }
+    else
+    {
+        [myScnView removeGestureRecognizer:panGesture];
+        [myScnView removeGestureRecognizer:pinchGesture];
+        panGesture = nil;
+        pinchGesture = nil;
+    }
     
     /*
      * Free camera control
@@ -154,38 +132,33 @@
 
 - (void)addGestureToBox
 {
-    UIPanGestureRecognizer *recognizer = [[UIPanGestureRecognizer alloc] initWithTarget:self action:@selector(handlePan:)];
-    [myScnView addGestureRecognizer:recognizer];
+    panGesture = [[UIPanGestureRecognizer alloc] initWithTarget:self action:@selector(handlePan:)];
+    [myScnView addGestureRecognizer:panGesture];
     
-    UIPinchGestureRecognizer *pinch = [[UIPinchGestureRecognizer alloc] initWithTarget:self action:@selector(handlePinch:)];
-    [myScnView addGestureRecognizer:pinch];
+    pinchGesture = [[UIPinchGestureRecognizer alloc] initWithTarget:self action:@selector(handlePinch:)];
+    [myScnView addGestureRecognizer:pinchGesture];
 }
 
 - (void)handlePan:(UIPanGestureRecognizer *)gesture
 {
-    CGPoint translation = [gesture translationInView:self.view];
-//    CGFloat positionX = boxNode.position.x;
-//    CGFloat positionY = boxNode.position.y;
-//    CGFloat positionZ = boxNode.position.z;
-//    if(gesture.state == UIGestureRecognizerStateChanged)
-//    {
-//        
-//        boxNode.position = SCNVector3Make(positionX + translation.x/400/sqrt(2.0), positionY - translation.y/400/sqrt(2.0), positionZ + translation.x/400/sqrt(2.0));
-//    }
+    CGPoint translation = [gesture translationInView:myScnView];
     
     if (gesture.state == UIGestureRecognizerStateChanged) {
+        // Get the hit on the cube
+        NSArray *hits = [myScnView hitTest:translation options:@{SCNHitTestRootNodeKey: boxNode,
+                                                                 SCNHitTestIgnoreChildNodesKey: @YES}];
+        SCNHitTestResult *hit = [hits firstObject];
+        SCNVector3 hitPosition = hit.worldCoordinates;
+        CGFloat hitPositionZ = [myScnView projectPoint: hitPosition].z;
+        SCNVector3 position_3d = [myScnView unprojectPoint:SCNVector3Make(translation.x, translation.y, hitPositionZ)];
         
-        boxNode.rotation = SCNVector4Make(0, 1, 0, lastRotation + atan2(translation.x, self.myScnView.bounds.size.width));
-    }
-    
-    if (gesture.state == UIGestureRecognizerStateEnded) {
-        lastRotation = lastRotation + atan2(translation.x, self.myScnView.bounds.size.width);
-    }
-    CGFloat cameraX = cameraNode.position.x;
-    CGFloat cameraY = cameraNode.position.y;
-    CGFloat cameraZ = cameraNode.position.z;
-    if(gesture.state == UIGestureRecognizerStateChanged)
-    {
+        position_3d.x = position_3d.x + 18;
+        NSLog(@"\n\n\n %f", -atan(position_3d.x / position_3d.z));
+        boxNode.rotation = SCNVector4Make(0, 1, 0,  -atan(position_3d.x / position_3d.z));
+        
+        CGFloat cameraX = cameraNode.position.x;
+        CGFloat cameraY = cameraNode.position.y;
+        CGFloat cameraZ = cameraNode.position.z;
         if (ABS(translation.y) < 60) {
             return;
         }
@@ -193,8 +166,8 @@
         if (cameraY+translation.y/400 <=1 || cameraY+translation.y/400 >= 50) {
             return;
         }
-        cameraNode.position = SCNVector3Make(cameraX, cameraY+translation.y/400, cameraZ) ;
-    }
+        cameraNode.position = SCNVector3Make(cameraX, cameraY+ translation.y/400, cameraZ);
+    }    
 }
 
 - (void)handlePinch:(UIPinchGestureRecognizer *)gesture
@@ -222,33 +195,40 @@
         cameraNode.position = SCNVector3Make(cameraX, cameraY*scale, cameraZ*scale);
     }
 }
+- (IBAction)tapPositionBtn:(id)sender {
+    UIButton *tmpBtn = sender;
+    tmpBtn.selected = !tmpBtn.selected;
+    position = tmpBtn.selected;
+}
 
 - (void)touchesMoved:(NSSet *)touches withEvent:(UIEvent *)event
 {
-    UITouch *touch = [touches anyObject];
-    // Get the location of the click
-    CGPoint point = [touch locationInView: myScnView];
-    
-    // Get the hit on the cube
-    NSArray *hits = [myScnView hitTest:point options:@{SCNHitTestRootNodeKey: boxNode,
-                                                       SCNHitTestIgnoreChildNodesKey: @YES}];
-    SCNHitTestResult *hit = [hits firstObject];
-    SCNVector3 hitPosition = hit.worldCoordinates;
-    CGFloat hitPositionZ = [myScnView projectPoint: hitPosition].z;
-    // Record the original position of the node
-    CGFloat nodeX = hit.node.position.x;
-    CGFloat nodeY = hit.node.position.y;
-    CGFloat nodeZ = hit.node.position.z;
-    
-    CGPoint location = [touch locationInView:myScnView];
-    CGPoint prevLocation = [touch previousLocationInView:myScnView];
-    SCNVector3 location_3d = [myScnView unprojectPoint:SCNVector3Make(location.x, location.y, hitPositionZ)];
-    SCNVector3 prevLocation_3d = [myScnView unprojectPoint:SCNVector3Make(prevLocation.x, prevLocation.y, hitPositionZ)];
-
-    CGFloat x_varible = location_3d.x - prevLocation_3d.x;
-    CGFloat z_varible = location_3d.z - prevLocation_3d.z;
-
-    hit.node.position = SCNVector3Make(nodeX + x_varible, nodeY, nodeZ + z_varible);
+    if (position) {
+        UITouch *touch = [touches anyObject];
+        // Get the location of the click
+        CGPoint point = [touch locationInView: myScnView];
+        
+        // Get the hit on the cube
+        NSArray *hits = [myScnView hitTest:point options:@{SCNHitTestRootNodeKey: boxNode,
+                                                           SCNHitTestIgnoreChildNodesKey: @YES}];
+        SCNHitTestResult *hit = [hits firstObject];
+        SCNVector3 hitPosition = hit.worldCoordinates;
+        CGFloat hitPositionZ = [myScnView projectPoint: hitPosition].z;
+        // Record the original position of the node
+        CGFloat nodeX = hit.node.position.x;
+        CGFloat nodeY = hit.node.position.y;
+        CGFloat nodeZ = hit.node.position.z;
+        
+        CGPoint location = [touch locationInView:myScnView];
+        CGPoint prevLocation = [touch previousLocationInView:myScnView];
+        SCNVector3 location_3d = [myScnView unprojectPoint:SCNVector3Make(location.x, location.y, hitPositionZ)];
+        SCNVector3 prevLocation_3d = [myScnView unprojectPoint:SCNVector3Make(prevLocation.x, prevLocation.y, hitPositionZ)];
+        
+        CGFloat x_varible = location_3d.x - prevLocation_3d.x;
+        CGFloat z_varible = location_3d.z - prevLocation_3d.z;
+        
+        hit.node.position = SCNVector3Make(nodeX + x_varible, nodeY, nodeZ + z_varible);
+    }
 }
 
 
