@@ -17,7 +17,13 @@
     UIPinchGestureRecognizer *pinchGesture;
     BOOL    position;
     BOOL    review;
+    BOOL    sizeBtn;
 }
+
+@property (weak, nonatomic) IBOutlet UIButton *uib_view;
+@property (weak, nonatomic) IBOutlet UIButton *uib_position;
+@property (weak, nonatomic) IBOutlet UIButton *uib_size;
+
 @end
 
 @implementation ViewController
@@ -109,9 +115,10 @@
     [self.myScnView.scene.rootNode addChildNode: ambienLightNode];
 }
 - (IBAction)animation:(id)sender {
-    UIButton *tmpBtn = sender;
-    tmpBtn.selected = !tmpBtn.selected;
-    review = tmpBtn.selected;
+    _uib_view.selected = !_uib_view.selected;
+    review = _uib_view.selected;
+    _uib_position.selected = NO;
+    _uib_size.selected = NO;
     if (review)
     {
         [self addGestureToBox];
@@ -196,41 +203,53 @@
     }
 }
 - (IBAction)tapPositionBtn:(id)sender {
-    UIButton *tmpBtn = sender;
-    tmpBtn.selected = !tmpBtn.selected;
-    position = tmpBtn.selected;
+    _uib_position.selected = !_uib_position.selected;
+    position = _uib_position.selected;
+    _uib_view.selected = NO;
+    _uib_size.selected = NO;
 }
 
 - (void)touchesMoved:(NSSet *)touches withEvent:(UIEvent *)event
 {
-    if (position) {
-        UITouch *touch = [touches anyObject];
-        // Get the location of the click
-        CGPoint point = [touch locationInView: myScnView];
+    
+    UITouch *touch = [touches anyObject];
+    // Get the location of the click
+    CGPoint point = [touch locationInView: myScnView];
         
-        // Get the hit on the cube
-        NSArray *hits = [myScnView hitTest:point options:@{SCNHitTestRootNodeKey: boxNode,
+    // Get the hit on the cube
+    NSArray *hits = [myScnView hitTest:point options:@{SCNHitTestRootNodeKey: boxNode,
                                                            SCNHitTestIgnoreChildNodesKey: @YES}];
-        SCNHitTestResult *hit = [hits firstObject];
-        SCNVector3 hitPosition = hit.worldCoordinates;
-        CGFloat hitPositionZ = [myScnView projectPoint: hitPosition].z;
-        // Record the original position of the node
-        CGFloat nodeX = hit.node.position.x;
-        CGFloat nodeY = hit.node.position.y;
-        CGFloat nodeZ = hit.node.position.z;
+    SCNHitTestResult *hit = [hits firstObject];
+    SCNVector3 hitPosition = hit.worldCoordinates;
+    CGFloat hitPositionZ = [myScnView projectPoint: hitPosition].z;
+    // Record the original position of the node
+    CGFloat nodeX = hit.node.position.x;
+    CGFloat nodeY = hit.node.position.y;
+    CGFloat nodeZ = hit.node.position.z;
         
-        CGPoint location = [touch locationInView:myScnView];
-        CGPoint prevLocation = [touch previousLocationInView:myScnView];
-        SCNVector3 location_3d = [myScnView unprojectPoint:SCNVector3Make(location.x, location.y, hitPositionZ)];
-        SCNVector3 prevLocation_3d = [myScnView unprojectPoint:SCNVector3Make(prevLocation.x, prevLocation.y, hitPositionZ)];
+    CGPoint location = [touch locationInView:myScnView];
+    CGPoint prevLocation = [touch previousLocationInView:myScnView];
+    SCNVector3 location_3d = [myScnView unprojectPoint:SCNVector3Make(location.x, location.y, hitPositionZ)];
+    SCNVector3 prevLocation_3d = [myScnView unprojectPoint:SCNVector3Make(prevLocation.x, prevLocation.y, hitPositionZ)];
         
-        CGFloat x_varible = location_3d.x - prevLocation_3d.x;
-        CGFloat z_varible = location_3d.z - prevLocation_3d.z;
-        
+    CGFloat x_varible = location_3d.x - prevLocation_3d.x;
+    CGFloat z_varible = location_3d.z - prevLocation_3d.z;
+    CGFloat y_varible = location_3d.y - prevLocation_3d.y;
+    
+    if (position) {
         hit.node.position = SCNVector3Make(nodeX + x_varible, nodeY, nodeZ + z_varible);
+    }
+    if (sizeBtn) {
+        boxNode.scale = SCNVector3Make(location_3d.x/10, location_3d.y/10, location_3d.z/10);
     }
 }
 
+- (IBAction)tapSizeBtn:(id)sender {
+    _uib_position.selected = NO;
+    _uib_view.selected = NO;
+    _uib_size.selected = !_uib_size.selected;
+    sizeBtn = _uib_size.selected;
+}
 
 - (void)didReceiveMemoryWarning {
     [super didReceiveMemoryWarning];

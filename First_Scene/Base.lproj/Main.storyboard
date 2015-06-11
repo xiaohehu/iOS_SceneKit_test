@@ -51,6 +51,9 @@
                                 <state key="normal" title="Size">
                                     <color key="titleShadowColor" white="0.5" alpha="1" colorSpace="calibratedWhite"/>
                                 </state>
+                                <connections>
+                                    <action selector="tapSizeBtn:" destination="BYZ-38-t0r" eventType="touchUpInside" id="usp-1e-hFj"/>
+                                </connections>
                             </button>
                         </subviews>
                         <color key="backgroundColor" white="1" alpha="1" colorSpace="custom" customColorSpace="calibratedWhite"/>
@@ -68,6 +71,9 @@
                     </view>
                     <connections>
                         <outlet property="myScnView" destination="DI5-Xm-64A" id="eJS-3K-4VG"/>
+                        <outlet property="uib_position" destination="YIH-aN-JEe" id="4sf-B9-aPM"/>
+                        <outlet property="uib_size" destination="JIW-iF-JYO" id="RFN-VJ-Oq2"/>
+                        <outlet property="uib_view" destination="7Dp-aD-Mcb" id="nNh-Ms-epx"/>
                     </connections>
                 </viewController>
                 <placeholder placeholderIdentifier="IBFirstResponder" id="dkx-z0-nzr" sceneMemberID="firstResponder"/>
