@@ -114,7 +114,7 @@
     
     [self.myScnView.scene.rootNode addChildNode: ambienLightNode];
 }
-- (IBAction)animation:(id)sender {
+- (IBAction)tapViewBtn:(id)sender {
     _uib_view.selected = !_uib_view.selected;
     review = _uib_view.selected;
     _uib_position.selected = NO;
@@ -149,19 +149,10 @@
 - (void)handlePan:(UIPanGestureRecognizer *)gesture
 {
     CGPoint translation = [gesture translationInView:myScnView];
-    
+
     if (gesture.state == UIGestureRecognizerStateChanged) {
-        // Get the hit on the cube
-        NSArray *hits = [myScnView hitTest:translation options:@{SCNHitTestRootNodeKey: boxNode,
-                                                                 SCNHitTestIgnoreChildNodesKey: @YES}];
-        SCNHitTestResult *hit = [hits firstObject];
-        SCNVector3 hitPosition = hit.worldCoordinates;
-        CGFloat hitPositionZ = [myScnView projectPoint: hitPosition].z;
-        SCNVector3 position_3d = [myScnView unprojectPoint:SCNVector3Make(translation.x, translation.y, hitPositionZ)];
-        
-        position_3d.x = position_3d.x + 18;
-        NSLog(@"\n\n\n %f", -atan(position_3d.x / position_3d.z));
-        boxNode.rotation = SCNVector4Make(0, 1, 0,  -atan(position_3d.x / position_3d.z));
+
+        boxNode.rotation = SCNVector4Make(0, 1, 0, translation.x/180 * M_PI);
         
         CGFloat cameraX = cameraNode.position.x;
         CGFloat cameraY = cameraNode.position.y;
@@ -174,7 +165,7 @@
             return;
         }
         cameraNode.position = SCNVector3Make(cameraX, cameraY+ translation.y/400, cameraZ);
-    }    
+    }
 }
 
 - (void)handlePinch:(UIPinchGestureRecognizer *)gesture
@@ -207,6 +198,10 @@
     position = _uib_position.selected;
     _uib_view.selected = NO;
     _uib_size.selected = NO;
+    [myScnView removeGestureRecognizer:panGesture];
+    [myScnView removeGestureRecognizer:pinchGesture];
+    panGesture = nil;
+    pinchGesture = nil;
 }
 
 - (void)touchesMoved:(NSSet *)touches withEvent:(UIEvent *)event
@@ -240,7 +235,7 @@
         hit.node.position = SCNVector3Make(nodeX + x_varible, nodeY, nodeZ + z_varible);
     }
     if (sizeBtn) {
-        boxNode.scale = SCNVector3Make(location_3d.x/10, location_3d.y/10, location_3d.z/10);
+        boxNode.scale = SCNVector3Make(fabsf(location_3d.x/10), fabsf(location_3d.y/10), fabsf(location_3d.z/10));
     }
 }
 
@@ -249,6 +244,10 @@
     _uib_view.selected = NO;
     _uib_size.selected = !_uib_size.selected;
     sizeBtn = _uib_size.selected;
+    [myScnView removeGestureRecognizer:panGesture];
+    [myScnView removeGestureRecognizer:pinchGesture];
+    panGesture = nil;
+    pinchGesture = nil;
 }
 
 - (void)didReceiveMemoryWarning {

@@ -30,7 +30,7 @@
                                     <color key="titleShadowColor" white="0.5" alpha="1" colorSpace="calibratedWhite"/>
                                 </state>
                                 <connections>
-                                    <action selector="animation:" destination="BYZ-38-t0r" eventType="touchUpInside" id="ue7-Vm-jvQ"/>
+                                    <action selector="tapViewBtn:" destination="BYZ-38-t0r" eventType="touchUpInside" id="Yxy-wO-f3u"/>
                                 </connections>
                             </button>
                             <button opaque="NO" contentMode="scaleToFill" contentHorizontalAlignment="center" contentVerticalAlignment="center" buttonType="roundedRect" lineBreakMode="middleTruncation" translatesAutoresizingMaskIntoConstraints="NO" id="YIH-aN-JEe">
