@@ -14,6 +14,10 @@
     SCNNode *boxNode;
     SCNNode *cameraNode;
     CGFloat lastRotation;
+    SCNLight *light;
+    SCNLight *omniLight;
+    SCNLight *spotlight;
+    SCNLight *ambientLight;
     UIPanGestureRecognizer *panGesture;
     UIPinchGestureRecognizer *pinchGesture;
     BOOL    position;
@@ -24,6 +28,12 @@
 @property (weak, nonatomic) IBOutlet UIButton *uib_view;
 @property (weak, nonatomic) IBOutlet UIButton *uib_position;
 @property (weak, nonatomic) IBOutlet UIButton *uib_size;
+@property (weak, nonatomic) IBOutlet UIButton *uib_color;
+
+@property (weak, nonatomic) IBOutlet UIView *uiv_colorContainer;
+@property (weak, nonatomic) IBOutlet UIButton *uib_yellow;
+@property (weak, nonatomic) IBOutlet UIButton *uib_blue;
+@property (weak, nonatomic) IBOutlet UIButton *uib_green;
 
 @end
 
@@ -73,7 +83,7 @@
 //    cameraNode.constraints = @[constraint];
     [scene.rootNode addChildNode: cameraNode];
     
-    SCNLight *light = [SCNLight light];
+    light = [SCNLight light];
     light.type = SCNLightTypeDirectional;
     light.color = lightBlueColor;
     SCNNode *lightNode = [SCNNode node];
@@ -83,7 +93,7 @@
     /*
      * Omni Light
      */
-//    SCNLight *omniLight = [SCNLight light];
+//    omniLight = [SCNLight light];
 //    omniLight.type = SCNLightTypeOmni;
 //    omniLight.color = lightBlueColor;
 //    omniLight.attenuationStartDistance = 15;
@@ -95,7 +105,7 @@
     /*
      * Spot Light
      */
-//    SCNLight *spotlight = [SCNLight light];
+//    spotlight = [SCNLight light];
 //    spotlight.type = SCNLightTypeSpot;
 //    spotlight.color = lightBlueColor;
 //    spotlight.spotInnerAngle = 10;
@@ -107,7 +117,7 @@
     /*
      * Ambient Light
      */
-    SCNLight *ambientLight = [SCNLight light];
+    ambientLight = [SCNLight light];
     ambientLight.type = SCNLightTypeAmbient;
     ambientLight.color = lightBlueColor;
     SCNNode *ambienLightNode = [SCNNode node];
@@ -115,23 +125,63 @@
     
     [self.myScnView.scene.rootNode addChildNode: ambienLightNode];
 }
+
+- (IBAction)tapColorBtn:(id)sender {
+    if (!_uib_color.selected) {
+        [self resetAllBtns];
+        _uib_color.selected = YES;
+        _uiv_colorContainer.hidden = NO;
+    }
+    else {
+        [self resetAllBtns];
+    }
+}
+
+- (IBAction)changeColor:(id)sender
+{
+    /*
+     * Button's tag is set in StoryBorad
+     */
+    UIColor *lightBlueColor = [UIColor colorWithRed:4.0/255.0
+                                              green:120.0/255.0
+                                               blue:255.0/255.0
+                                              alpha:1.0];
+    UIColor *lightPinkColor = [UIColor colorWithRed:255.0/255.0
+                                                green:26.0/255.0
+                                                 blue:245.0/255.0
+                                                alpha:1.0];
+    UIColor *lightGreenColor = [UIColor colorWithRed:89.0/255.0
+                                               green:255.0/255.0
+                                                blue:26.0/255.0
+                                               alpha:1.0];
+    switch ([sender tag]) {
+        case 1:
+            light.color = lightPinkColor;
+            ambientLight.color = lightPinkColor;
+            break;
+        case 2:
+            light.color = lightBlueColor;
+            ambientLight.color = lightBlueColor;
+            break;
+        case 3:
+            light.color = lightGreenColor;
+            ambientLight.color = lightGreenColor;
+            break;
+        default:
+            break;
+    }
+}
+
 - (IBAction)tapViewBtn:(id)sender {
-    _uib_view.selected = !_uib_view.selected;
-    review = _uib_view.selected;
-    _uib_position.selected = NO;
-    _uib_size.selected = NO;
-    sizeBtn = NO;
-    position = NO;
-    if (review)
-    {
+    
+    if (!_uib_view.selected) {
+        [self resetAllBtns];
+        _uib_view.selected = YES;
+        review = YES;
         [self addGestureToBox];
     }
-    else
-    {
-        [myScnView removeGestureRecognizer:panGesture];
-        [myScnView removeGestureRecognizer:pinchGesture];
-        panGesture = nil;
-        pinchGesture = nil;
+    else {
+        [self resetAllBtns];
     }
     
     /*
@@ -141,25 +191,39 @@
 }
 
 - (IBAction)tapPositionBtn:(id)sender {
-    _uib_position.selected = !_uib_position.selected;
-    position = _uib_position.selected;
-    _uib_view.selected = NO;
-    _uib_size.selected = NO;
-    sizeBtn = NO;
-    review = NO;
-    [myScnView removeGestureRecognizer:panGesture];
-    [myScnView removeGestureRecognizer:pinchGesture];
-    panGesture = nil;
-    pinchGesture = nil;
+
+    if (!_uib_position.selected) {
+        [self resetAllBtns];
+        _uib_position.selected = YES;
+        position = YES;
+    }
+    else {
+        [self resetAllBtns];
+    }
 }
 
 - (IBAction)tapSizeBtn:(id)sender {
-    _uib_position.selected = NO;
+
+    if (!_uib_size.selected) {
+        [self resetAllBtns];
+        _uib_size.selected = YES;
+        sizeBtn = YES;
+    }
+    else {
+        [self resetAllBtns];
+    }
+}
+
+- (void)resetAllBtns
+{
+    _uiv_colorContainer.hidden = YES;
     _uib_view.selected = NO;
-    position = NO;
+    _uib_size.selected = NO;
+    _uib_color.selected = NO;
+    _uib_position.selected = NO;
     review = NO;
-    _uib_size.selected = !_uib_size.selected;
-    sizeBtn = _uib_size.selected;
+    sizeBtn = NO;
+    position = NO;
     [myScnView removeGestureRecognizer:panGesture];
     [myScnView removeGestureRecognizer:pinchGesture];
     panGesture = nil;
