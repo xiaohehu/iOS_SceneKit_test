@@ -10,6 +10,7 @@
 
 @interface ViewController ()
 {
+    SCNBox  *box;
     SCNNode *boxNode;
     SCNNode *cameraNode;
     CGFloat lastRotation;
@@ -54,7 +55,7 @@
     [scene.rootNode addChildNode:floorNode];
 
     CGFloat boxSide = 10.0;
-    SCNBox *box = [SCNBox boxWithWidth:boxSide
+    box = [SCNBox boxWithWidth:boxSide
                                 height:boxSide
                                 length:boxSide
                          chamferRadius:1.0];
@@ -119,6 +120,8 @@
     review = _uib_view.selected;
     _uib_position.selected = NO;
     _uib_size.selected = NO;
+    sizeBtn = NO;
+    position = NO;
     if (review)
     {
         [self addGestureToBox];
@@ -137,6 +140,32 @@
 //    self.myScnView.allowsCameraControl = YES;
 }
 
+- (IBAction)tapPositionBtn:(id)sender {
+    _uib_position.selected = !_uib_position.selected;
+    position = _uib_position.selected;
+    _uib_view.selected = NO;
+    _uib_size.selected = NO;
+    sizeBtn = NO;
+    review = NO;
+    [myScnView removeGestureRecognizer:panGesture];
+    [myScnView removeGestureRecognizer:pinchGesture];
+    panGesture = nil;
+    pinchGesture = nil;
+}
+
+- (IBAction)tapSizeBtn:(id)sender {
+    _uib_position.selected = NO;
+    _uib_view.selected = NO;
+    position = NO;
+    review = NO;
+    _uib_size.selected = !_uib_size.selected;
+    sizeBtn = _uib_size.selected;
+    [myScnView removeGestureRecognizer:panGesture];
+    [myScnView removeGestureRecognizer:pinchGesture];
+    panGesture = nil;
+    pinchGesture = nil;
+}
+
 - (void)addGestureToBox
 {
     panGesture = [[UIPanGestureRecognizer alloc] initWithTarget:self action:@selector(handlePan:)];
@@ -151,9 +180,16 @@
     CGPoint translation = [gesture translationInView:myScnView];
 
     if (gesture.state == UIGestureRecognizerStateChanged) {
-
+        /*
+         * Pan gesture distance convert to rotation radian
+         */
         boxNode.rotation = SCNVector4Make(0, 1, 0, translation.x/180 * M_PI);
         
+        /*
+         * Change camera's Y position to move up & down 
+         * ####  MAGIC NUM 400 #####
+         * Limitation added to control camera's max height and min position to floor
+         */
         CGFloat cameraX = cameraNode.position.x;
         CGFloat cameraY = cameraNode.position.y;
         CGFloat cameraZ = cameraNode.position.z;
@@ -193,16 +229,6 @@
         cameraNode.position = SCNVector3Make(cameraX, cameraY*scale, cameraZ*scale);
     }
 }
-- (IBAction)tapPositionBtn:(id)sender {
-    _uib_position.selected = !_uib_position.selected;
-    position = _uib_position.selected;
-    _uib_view.selected = NO;
-    _uib_size.selected = NO;
-    [myScnView removeGestureRecognizer:panGesture];
-    [myScnView removeGestureRecognizer:pinchGesture];
-    panGesture = nil;
-    pinchGesture = nil;
-}
 
 - (void)touchesMoved:(NSSet *)touches withEvent:(UIEvent *)event
 {
@@ -229,25 +255,42 @@
         
     CGFloat x_varible = location_3d.x - prevLocation_3d.x;
     CGFloat z_varible = location_3d.z - prevLocation_3d.z;
-    CGFloat y_varible = location_3d.y - prevLocation_3d.y;
     
+    /*
+     * Change position of the box
+     * Keep Y value (stick on floor)
+     */
     if (position) {
         hit.node.position = SCNVector3Make(nodeX + x_varible, nodeY, nodeZ + z_varible);
     }
+    
+    /*
+     * Change scale of the box
+     */
     if (sizeBtn) {
-        boxNode.scale = SCNVector3Make(fabsf(location_3d.x/10), fabsf(location_3d.y/10), fabsf(location_3d.z/10));
+        /*
+         * ###### Change the scale is not a good method
+         * ###### Always reset the scale when begin moving #######
+         */
+//        boxNode.scale = SCNVector3Make(boxNode.scale.x * fabsf(location_3d.x/10),
+//                                       boxNode.scale.y * fabsf(location_3d.y/10),
+//                                       boxNode.scale.z * fabsf(location_3d.z/10));
+        
+//        boxNode.scale = SCNVector3Make(fabsf(location_3d.x/10),
+//                                       fabsf(location_3d.y/10),
+//                                       fabsf(location_3d.z/10));
+        
+        /*
+         * Change box's size according to the move distance
+         */
+        box.height = location_3d.y+10;
+        box.width = location_3d.x+10;
+        box.length = location_3d.z+10;
+        /*
+         * Change pivot of the node keep it always on top of floor
+         */
+        boxNode.pivot = SCNMatrix4MakeTranslation(0.0, -location_3d.y, 0.0);
     }
-}
-
-- (IBAction)tapSizeBtn:(id)sender {
-    _uib_position.selected = NO;
-    _uib_view.selected = NO;
-    _uib_size.selected = !_uib_size.selected;
-    sizeBtn = _uib_size.selected;
-    [myScnView removeGestureRecognizer:panGesture];
-    [myScnView removeGestureRecognizer:pinchGesture];
-    panGesture = nil;
-    pinchGesture = nil;
 }
 
 - (void)didReceiveMemoryWarning {
