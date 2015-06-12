@@ -13,6 +13,7 @@
     SCNBox  *box;
     SCNNode *boxNode;
     SCNNode *cameraNode;
+    SCNNode *textNode;
     CGFloat lastRotation;
     SCNLight *light;
     SCNLight *omniLight;
@@ -82,6 +83,24 @@
 //    SCNLookAtConstraint *constraint = [SCNLookAtConstraint lookAtConstraintWithTarget:boxNode];
 //    cameraNode.constraints = @[constraint];
     [scene.rootNode addChildNode: cameraNode];
+    
+    NSString *myText = @"HOTEL";
+    SCNText *text = [SCNText textWithString:myText
+                             extrusionDepth:0.2];
+    text.firstMaterial.diffuse.contents =
+    [UIColor colorWithWhite:.9 alpha:1.0];
+    text.font = [UIFont systemFontOfSize:2.0];
+    text.flatness = 0.1;
+    textNode = [SCNNode nodeWithGeometry:text];
+    textNode.position = SCNVector3Make(-2.5,
+                                       box.height/2 + 2,
+                                       0);
+    SCNNode *tempNode = [SCNNode node];
+    tempNode.position = SCNVector3Make(0, 0, -50000);
+    [scene.rootNode addChildNode: tempNode];
+    SCNLookAtConstraint *constraint = [SCNLookAtConstraint lookAtConstraintWithTarget:tempNode];
+    textNode.constraints = @[constraint];
+    [boxNode addChildNode: textNode];
     
     light = [SCNLight light];
     light.type = SCNLightTypeDirectional;
@@ -350,6 +369,7 @@
         box.height = location_3d.y+10;
         box.width = location_3d.x+10;
         box.length = location_3d.z+10;
+        textNode.position = SCNVector3Make(textNode.position.x, box.height/2+2, textNode.position.z);
         /*
          * Change pivot of the node keep it always on top of floor
          */
