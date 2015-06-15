@@ -10,6 +10,7 @@
 
 @interface ViewController ()
 {
+    SCNNode *floorNode;
     SCNBox  *box;
     SCNNode *boxNode;
     SCNNode *cameraNode;
@@ -30,6 +31,7 @@
 @property (weak, nonatomic) IBOutlet UIButton *uib_position;
 @property (weak, nonatomic) IBOutlet UIButton *uib_size;
 @property (weak, nonatomic) IBOutlet UIButton *uib_color;
+@property (weak, nonatomic) IBOutlet UIButton *uib_freeCam;
 
 @property (weak, nonatomic) IBOutlet UIView *uiv_colorContainer;
 @property (weak, nonatomic) IBOutlet UIButton *uib_yellow;
@@ -56,13 +58,14 @@
     // ------------------
     SCNFloor *floor = [SCNFloor floor];
     // A solid white color, not affected by light
-    floor.firstMaterial.diffuse.contents = [UIColor redColor];
+    floor.firstMaterial.diffuse.contents = [UIColor colorWithRed:79.0/255.0 green:191.0/255.0 blue:76.0/255.0 alpha:1.0];
     floor.firstMaterial.lightingModelName = SCNLightingModelConstant;
     // Less reflective and decrease by distance
     floor.reflectivity = 0;
     floor.reflectionFalloffEnd = 0;
-    SCNNode *floorNode = [SCNNode nodeWithGeometry:floor];
+    floorNode = [SCNNode nodeWithGeometry:floor];
     floorNode.position = SCNVector3Make(0, -5, 0);
+    floorNode.physicsBody = [SCNPhysicsBody bodyWithType:SCNPhysicsBodyTypeKinematic shape:[SCNPhysicsShape shapeWithGeometry:floor options:nil]];
     [scene.rootNode addChildNode:floorNode];
 
     CGFloat boxSide = 10.0;
@@ -70,9 +73,11 @@
                                 height:boxSide
                                 length:boxSide
                          chamferRadius:1.0];
-    boxNode = [SCNNode nodeWithGeometry:box];
-    boxNode.physicsBody = [SCNPhysicsBody bodyWithType:SCNPhysicsBodyTypeKinematic shape:nil];
     box.firstMaterial.specular.contents = [UIColor whiteColor];
+    boxNode = [SCNNode nodeWithGeometry:box];
+    boxNode.physicsBody = [SCNPhysicsBody bodyWithType:SCNPhysicsBodyTypeKinematic shape:[SCNPhysicsShape shapeWithGeometry:box options:nil]];
+    boxNode.pivot = SCNMatrix4MakeTranslation(0.0, -box.height/2, 0.0);
+    boxNode.position = SCNVector3Make(0.0, floorNode.position.y, 0.0);
 //    boxNode.rotation = SCNVector4Make(0.0, 1.0, 0.0, M_PI/6.0);
     [scene.rootNode addChildNode: boxNode];
     
@@ -145,6 +150,14 @@
     [self.myScnView.scene.rootNode addChildNode: ambienLightNode];
 }
 
+- (IBAction)tapFreeCam:(id)sender {
+    _uib_freeCam.selected = !_uib_freeCam.selected;
+    /*
+     * Free camera control
+     */
+    self.myScnView.allowsCameraControl = _uib_freeCam.selected;
+}
+
 - (IBAction)tapColorBtn:(id)sender {
     if (!_uib_color.selected) {
         [self resetAllBtns];
@@ -202,11 +215,6 @@
     else {
         [self resetAllBtns];
     }
-    
-    /*
-     * Free camera control
-     */
-//    self.myScnView.allowsCameraControl = YES;
 }
 
 - (IBAction)tapPositionBtn:(id)sender {
@@ -315,7 +323,6 @@
 
 - (void)touchesMoved:(NSSet *)touches withEvent:(UIEvent *)event
 {
-    
     UITouch *touch = [touches anyObject];
     // Get the location of the click
     CGPoint point = [touch locationInView: myScnView];
@@ -327,10 +334,10 @@
     SCNVector3 hitPosition = hit.worldCoordinates;
     CGFloat hitPositionZ = [myScnView projectPoint: hitPosition].z;
     // Record the original position of the node
-    CGFloat nodeX = hit.node.position.x;
+//    CGFloat nodeX = hit.node.position.x;
     CGFloat nodeY = hit.node.position.y;
-    CGFloat nodeZ = hit.node.position.z;
-        
+//    CGFloat nodeZ = hit.node.position.z;
+
     CGPoint location = [touch locationInView:myScnView];
     CGPoint prevLocation = [touch previousLocationInView:myScnView];
     SCNVector3 location_3d = [myScnView unprojectPoint:SCNVector3Make(location.x, location.y, hitPositionZ)];
@@ -344,7 +351,7 @@
      * Keep Y value (stick on floor)
      */
     if (position) {
-        hit.node.position = SCNVector3Make(nodeX + x_varible, nodeY, nodeZ + z_varible);
+        boxNode.position = SCNVector3Make(boxNode.position.x + x_varible, floorNode.position.y, boxNode.position.z + z_varible);
     }
     
     /*
@@ -369,11 +376,14 @@
         box.height = location_3d.y+10;
         box.width = location_3d.x+10;
         box.length = location_3d.z+10;
-        textNode.position = SCNVector3Make(textNode.position.x, box.height/2+2, textNode.position.z);
+       
         /*
          * Change pivot of the node keep it always on top of floor
          */
-        boxNode.pivot = SCNMatrix4MakeTranslation(0.0, -location_3d.y, 0.0);
+        boxNode.pivot = SCNMatrix4MakeTranslation(0.0, -box.height/2, 0.0);
+        boxNode.position = SCNVector3Make(0.0, floorNode.position.y, 0.0);
+        textNode.position = SCNVector3Make(textNode.position.x, box.height/2+2, textNode.position.z);
+        
     }
 }
 
