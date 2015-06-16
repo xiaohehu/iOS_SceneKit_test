@@ -57,20 +57,56 @@
                                                blue:255.0/255.0
                                               alpha:1.0];
     
-    // A reflective floor
+//    // A reflective floor
+//    // ------------------
+//    SCNFloor *floor = [SCNFloor floor];
+//    // A solid white color, not affected by light
+//    floor.firstMaterial.diffuse.contents = [UIColor colorWithRed:79.0/255.0 green:191.0/255.0 blue:76.0/255.0 alpha:1.0];
+//    floor.firstMaterial.lightingModelName = SCNLightingModelConstant;
+//    // Less reflective and decrease by distance
+//    floor.reflectivity = 0;
+//    floor.reflectionFalloffEnd = 0;
+//    floorNode = [SCNNode nodeWithGeometry:floor];
+//    floorNode.position = SCNVector3Make(0, -5, 0);
+//    floorNode.physicsBody = [SCNPhysicsBody bodyWithType:SCNPhysicsBodyTypeKinematic shape:[SCNPhysicsShape shapeWithGeometry:floor options:nil]];
+//    [scene.rootNode addChildNode:floorNode];
+    
+    // A plane on X-Z coordinates
     // ------------------
-    SCNFloor *floor = [SCNFloor floor];
-    // A solid white color, not affected by light
+    SCNPlane *floor = [SCNPlane planeWithWidth:50 height:50];
     floor.firstMaterial.diffuse.contents = [UIColor colorWithRed:79.0/255.0 green:191.0/255.0 blue:76.0/255.0 alpha:1.0];
     floor.firstMaterial.lightingModelName = SCNLightingModelConstant;
-    // Less reflective and decrease by distance
-    floor.reflectivity = 0;
-    floor.reflectionFalloffEnd = 0;
     floorNode = [SCNNode nodeWithGeometry:floor];
-    floorNode.position = SCNVector3Make(0, -5, 0);
+    floorNode.position = SCNVector3Make(0, 0, 0);
     floorNode.physicsBody = [SCNPhysicsBody bodyWithType:SCNPhysicsBodyTypeKinematic shape:[SCNPhysicsShape shapeWithGeometry:floor options:nil]];
+    floorNode.pivot = SCNMatrix4MakeTranslation(0.0, 0.0, 0.0);
+    floorNode.rotation = SCNVector4Make(1, 0, 0, -M_PI_2);
     [scene.rootNode addChildNode:floorNode];
 
+    // A plane on Y-Z coordinates left
+    // ------------------
+    SCNPlane *leftWall = [SCNPlane planeWithWidth:50 height:50];
+    leftWall.firstMaterial.diffuse.contents = [UIColor blackColor];
+    leftWall.firstMaterial.lightingModelName = SCNLightingModelConstant;
+    SCNNode *leftWallNode = [SCNNode nodeWithGeometry:leftWall];
+    leftWallNode.position = SCNVector3Make(-25, 0, 0);
+    leftWallNode.physicsBody = [SCNPhysicsBody bodyWithType:SCNPhysicsBodyTypeKinematic shape:[SCNPhysicsShape shapeWithGeometry:leftWall options:nil]];
+    leftWallNode.pivot = SCNMatrix4MakeTranslation(0.0, 0.0, 0.0);
+    leftWallNode.rotation = SCNVector4Make(0, 1, 0, -M_PI_4);
+    [scene.rootNode addChildNode:leftWallNode];
+    
+    // A plane on Y-Z coordinates right
+    // ------------------
+    SCNPlane *rightWall = [SCNPlane planeWithWidth:50 height:50];
+    rightWall.firstMaterial.diffuse.contents = [UIColor blackColor];
+    rightWall.firstMaterial.lightingModelName = SCNLightingModelConstant;
+    SCNNode *righttWallNode = [SCNNode nodeWithGeometry:rightWall];
+    righttWallNode.position = SCNVector3Make(0, 0, 0);
+    righttWallNode.physicsBody = [SCNPhysicsBody bodyWithType:SCNPhysicsBodyTypeKinematic shape:[SCNPhysicsShape shapeWithGeometry:leftWall options:nil]];
+    righttWallNode.rotation = SCNVector4Make(0, 1, 0, -M_PI_4*3);
+    [scene.rootNode addChildNode:righttWallNode];
+    
+    
     CGFloat boxSide = 10.0;
     box = [SCNBox boxWithWidth:boxSide
                                 height:boxSide
@@ -81,15 +117,14 @@
     boxNode.physicsBody = [SCNPhysicsBody bodyWithType:SCNPhysicsBodyTypeKinematic shape:[SCNPhysicsShape shapeWithGeometry:box options:nil]];
     boxNode.pivot = SCNMatrix4MakeTranslation(0.0, -box.height/2, 0.0);
     boxNode.position = SCNVector3Make(0.0, floorNode.position.y, 0.0);
-//    boxNode.rotation = SCNVector4Make(0.0, 1.0, 0.0, M_PI/6.0);
     [scene.rootNode addChildNode: boxNode];
     
     cameraNode = [SCNNode node];
     cameraNode.camera = [SCNCamera camera];
-    cameraNode.position = SCNVector3Make(0.0, 10.0, 20.0);
+    cameraNode.position = SCNVector3Make(0.0, 20.0, 30.0);
     cameraX = 0.0;
-    cameraY = 10.0;
-    cameraZ = 20.0;
+    cameraY = 20.0;
+    cameraZ = 30.0;
     cameraNode.rotation = SCNVector4Make(1, 0, 0, -atan2(10.0, 20.0));
 //    SCNLookAtConstraint *constraint = [SCNLookAtConstraint lookAtConstraintWithTarget:boxNode];
 //    cameraNode.constraints = @[constraint];
