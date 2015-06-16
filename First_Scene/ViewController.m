@@ -289,7 +289,7 @@
         }
 
         BOOL isInCamera = [myScnView isNodeInsideFrustum:boxNode
-                                               withPointOfView:cameraNode];
+                                               withPointOfView:myScnView.pointOfView];
         if (!isInCamera) {
             NSLog(@"\n\n Off the camera");
         }
