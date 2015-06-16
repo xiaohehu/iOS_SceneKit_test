@@ -285,16 +285,19 @@
         
         BOOL isVisible = [myScnView isNodeInsideFrustum:boxNode withPointOfView:myScnView.pointOfView];
         if (!isVisible) {
-            return;
+            NSLog(@"\n\n Off the screen \n\n");
         }
-        
+
+        BOOL isInCamera = [myScnView isNodeInsideFrustum:boxNode
+                                               withPointOfView:cameraNode];
+        if (!isInCamera) {
+            NSLog(@"\n\n Off the camera");
+        }
         
         /*
          * Change camera's Y position to move up & down
          * Limitation added to control camera's max height and min position to floor
          */
-        
-        NSLog(@"The transition is %f", translation.y/cameraY);
         
         if (cameraY+translation.y/cameraY <=1 || cameraY+translation.y/cameraY >= 50) {
             return;
