@@ -335,7 +335,7 @@
     CGFloat hitPositionZ = [myScnView projectPoint: hitPosition].z;
     // Record the original position of the node
 //    CGFloat nodeX = hit.node.position.x;
-    CGFloat nodeY = hit.node.position.y;
+//    CGFloat nodeY = hit.node.position.y;
 //    CGFloat nodeZ = hit.node.position.z;
 
     CGPoint location = [touch locationInView:myScnView];
@@ -377,12 +377,17 @@
         box.width = location_3d.x+10;
         box.length = location_3d.z+10;
        
-        /*
-         * Change pivot of the node keep it always on top of floor
-         */
-        boxNode.pivot = SCNMatrix4MakeTranslation(0.0, -box.height/2, 0.0);
-        boxNode.position = SCNVector3Make(0.0, floorNode.position.y, 0.0);
-        textNode.position = SCNVector3Make(textNode.position.x, box.height/2+2, textNode.position.z);
+        if (box.height * box.width * box.length <= 0) {
+            return;
+        }
+        else {
+            /*
+             * Change pivot of the node keep it always on top of floor
+             */
+            boxNode.pivot = SCNMatrix4MakeTranslation(0.0, -box.height/2, 0.0);
+            boxNode.position = SCNVector3Make(0.0, floorNode.position.y, 0.0);
+            textNode.position = SCNVector3Make(textNode.position.x, box.height/2+2, textNode.position.z);
+        }
         
     }
 }
