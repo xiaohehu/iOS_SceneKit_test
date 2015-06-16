@@ -10,18 +10,21 @@
 
 @interface ViewController ()
 {
-    SCNNode *floorNode;
-    SCNBox  *box;
-    SCNNode *boxNode;
-    SCNNode *cameraNode;
-    SCNNode *textNode;
-    CGFloat lastRotation;
-    SCNLight *light;
-    SCNLight *omniLight;
-    SCNLight *spotlight;
-    SCNLight *ambientLight;
-    UIPanGestureRecognizer *panGesture;
-    UIPinchGestureRecognizer *pinchGesture;
+    SCNNode                     *floorNode;
+    SCNBox                      *box;
+    SCNNode                     *boxNode;
+    SCNNode                     *cameraNode;
+    SCNNode                     *textNode;
+    CGFloat                     lastRotation;
+    SCNLight                    *light;
+    SCNLight                    *omniLight;
+    SCNLight                    *spotlight;
+    SCNLight                    *ambientLight;
+    UIPanGestureRecognizer      *panGesture;
+    UIPinchGestureRecognizer    *pinchGesture;
+    CGFloat                     cameraY;
+    CGFloat                     cameraZ;
+    CGFloat                     cameraX;
     BOOL    position;
     BOOL    review;
     BOOL    sizeBtn;
@@ -84,6 +87,9 @@
     cameraNode = [SCNNode node];
     cameraNode.camera = [SCNCamera camera];
     cameraNode.position = SCNVector3Make(0.0, 10.0, 20.0);
+    cameraX = 0.0;
+    cameraY = 10.0;
+    cameraZ = 20.0;
     cameraNode.rotation = SCNVector4Make(1, 0, 0, -atan2(10.0, 20.0));
 //    SCNLookAtConstraint *constraint = [SCNLookAtConstraint lookAtConstraintWithTarget:boxNode];
 //    cameraNode.constraints = @[constraint];
@@ -276,48 +282,48 @@
          */
         boxNode.rotation = SCNVector4Make(0, 1, 0, translation.x/180 * M_PI);
         
-        /*
-         * Change camera's Y position to move up & down 
-         * ####  MAGIC NUM 400 #####
-         * Limitation added to control camera's max height and min position to floor
-         */
-        CGFloat cameraX = cameraNode.position.x;
-        CGFloat cameraY = cameraNode.position.y;
-        CGFloat cameraZ = cameraNode.position.z;
-        if (ABS(translation.y) < 60) {
+        
+        BOOL isVisible = [myScnView isNodeInsideFrustum:boxNode withPointOfView:myScnView.pointOfView];
+        if (!isVisible) {
             return;
         }
         
-        if (cameraY+translation.y/400 <=1 || cameraY+translation.y/400 >= 50) {
+        
+        /*
+         * Change camera's Y position to move up & down
+         * Limitation added to control camera's max height and min position to floor
+         */
+        
+        NSLog(@"The transition is %f", translation.y/cameraY);
+        
+        if (cameraY+translation.y/cameraY <=1 || cameraY+translation.y/cameraY >= 50) {
             return;
         }
-        cameraNode.position = SCNVector3Make(cameraX, cameraY+ translation.y/400, cameraZ);
+        cameraNode.position = SCNVector3Make(cameraX, cameraY + translation.y/cameraY, cameraZ);
+    }
+    
+    if (gesture.state == UIGestureRecognizerStateEnded) {
+        cameraY = cameraNode.position.y;
     }
 }
 
 - (void)handlePinch:(UIPinchGestureRecognizer *)gesture
 {
-    CGFloat cameraX = cameraNode.position.x;
-    CGFloat cameraY = cameraNode.position.y;
-    CGFloat cameraZ = cameraNode.position.z;
-    
-    if (cameraZ <= 10 || cameraZ >= 80) {
-        return;
-    }
     
     if(gesture.state == UIGestureRecognizerStateChanged)
     {
-        
-        float scale = ABS(gesture.scale-2);
-        if (gesture.scale > 2) {
-            scale = 2.0;
-        }
-        
-        if (cameraZ*scale >= 80 || cameraZ*scale <= 10) {
+        float scale = gesture.scale;
+        float maxDistance = 90;
+        float minDistance = 10;
+        if (cameraZ*scale >= maxDistance || cameraZ*scale <= minDistance) {
             return;
         }
-        
         cameraNode.position = SCNVector3Make(cameraX, cameraY*scale, cameraZ*scale);
+    }
+    
+    if (gesture.state == UIGestureRecognizerStateEnded) {
+        cameraY = cameraNode.position.y;
+        cameraZ = cameraNode.position.z;
     }
 }
 
