@@ -8,13 +8,24 @@
 
 #import "ViewController.h"
 
+typedef NS_OPTIONS(NSUInteger, CollisionCategory) {
+    CollisionCategoryWall    = 0x1 << 0,
+    CollisionCategoryCube    = 0x1 << 1,
+};
+
 @interface ViewController ()
 {
     SCNNode                     *floorNode;
     SCNBox                      *box;
+    SCNPlane                    *leftWall;
+    SCNPlane                    *rightWall;
+    SCNPlane                    *backWall;
     SCNNode                     *boxNode;
     SCNNode                     *cameraNode;
     SCNNode                     *textNode;
+    SCNNode                     *leftWallNode;
+    SCNNode                     *rightWallNode;
+    SCNNode                     *backWallNode;
     CGFloat                     lastRotation;
     SCNLight                    *light;
     SCNLight                    *omniLight;
@@ -47,16 +58,38 @@
 
 @synthesize myScnView;
 
+- (void)physicsWorld:(SCNPhysicsWorld *)world didBeginContact:(SCNPhysicsContact *)contact
+{
+    NSLog(@"\n\nFind Collision\n\n");
+    CollisionCategory contactMask =
+    contact.nodeA.physicsBody.categoryBitMask | contact.nodeB.physicsBody.categoryBitMask;
+
+    if (contactMask == (CollisionCategoryCube | CollisionCategoryWall))
+    {
+        position = NO;
+    }
+}
+
+- (void)physicsWorld:(SCNPhysicsWorld *)world didEndContact:(SCNPhysicsContact *)contact
+{
+    position = YES;
+}
+
 - (void)viewDidLoad {
     [super viewDidLoad];
     // Do any additional setup after loading the view, typically from a nib.
+    
+//    myScnView.scene.physicsWorld.gravity = SCNVector3Make(0, 0, 0);
+    
     SCNScene *scene = [SCNScene scene];
     myScnView.scene = scene;
+    myScnView.scene.physicsWorld.gravity = SCNVector3Make(0.0, 0.0, 0.0);
+    myScnView.scene.physicsWorld.contactDelegate = self;
+    
     UIColor *lightBlueColor = [UIColor colorWithRed:4.0/255.0
                                               green:120.0/255.0
                                                blue:255.0/255.0
                                               alpha:1.0];
-    
 //    // A reflective floor
 //    // ------------------
 //    SCNFloor *floor = [SCNFloor floor];
@@ -78,34 +111,48 @@
     floor.firstMaterial.lightingModelName = SCNLightingModelConstant;
     floorNode = [SCNNode nodeWithGeometry:floor];
     floorNode.position = SCNVector3Make(0, 0, 0);
-    floorNode.physicsBody = [SCNPhysicsBody bodyWithType:SCNPhysicsBodyTypeKinematic shape:[SCNPhysicsShape shapeWithGeometry:floor options:nil]];
+//    floorNode.physicsBody = [SCNPhysicsBody bodyWithType:SCNPhysicsBodyTypeKinematic shape:[SCNPhysicsShape shapeWithGeometry:floor options:nil]];
     floorNode.pivot = SCNMatrix4MakeTranslation(0.0, 0.0, 0.0);
     floorNode.rotation = SCNVector4Make(1, 0, 0, -M_PI_2);
     [scene.rootNode addChildNode:floorNode];
 
     // A plane on Y-Z coordinates left
     // ------------------
-    SCNPlane *leftWall = [SCNPlane planeWithWidth:50 height:50];
+    leftWall = [SCNPlane planeWithWidth:50 height:50];
     leftWall.firstMaterial.diffuse.contents = [UIColor blackColor];
     leftWall.firstMaterial.lightingModelName = SCNLightingModelConstant;
-    SCNNode *leftWallNode = [SCNNode nodeWithGeometry:leftWall];
+    leftWallNode = [SCNNode nodeWithGeometry:leftWall];
+    leftWallNode.rotation = SCNVector4Make(0, 1, 0, M_PI_2);
     leftWallNode.position = SCNVector3Make(-25, 0, 0);
-    leftWallNode.physicsBody = [SCNPhysicsBody bodyWithType:SCNPhysicsBodyTypeKinematic shape:[SCNPhysicsShape shapeWithGeometry:leftWall options:nil]];
+    leftWallNode.physicsBody = [SCNPhysicsBody bodyWithType:SCNPhysicsBodyTypeStatic shape:[SCNPhysicsShape shapeWithGeometry:leftWall options:nil]];
+    leftWallNode.physicsBody.physicsShape = [SCNPhysicsShape shapeWithGeometry:leftWall options:nil];
     leftWallNode.pivot = SCNMatrix4MakeTranslation(0.0, 0.0, 0.0);
-    leftWallNode.rotation = SCNVector4Make(0, 1, 0, -M_PI_4);
     [scene.rootNode addChildNode:leftWallNode];
     
     // A plane on Y-Z coordinates right
     // ------------------
-    SCNPlane *rightWall = [SCNPlane planeWithWidth:50 height:50];
+    rightWall = [SCNPlane planeWithWidth:50 height:50];
     rightWall.firstMaterial.diffuse.contents = [UIColor blackColor];
     rightWall.firstMaterial.lightingModelName = SCNLightingModelConstant;
-    SCNNode *righttWallNode = [SCNNode nodeWithGeometry:rightWall];
-    righttWallNode.position = SCNVector3Make(0, 0, 0);
-    righttWallNode.physicsBody = [SCNPhysicsBody bodyWithType:SCNPhysicsBodyTypeKinematic shape:[SCNPhysicsShape shapeWithGeometry:leftWall options:nil]];
-    righttWallNode.rotation = SCNVector4Make(0, 1, 0, -M_PI_4*3);
-    [scene.rootNode addChildNode:righttWallNode];
+    rightWallNode = [SCNNode nodeWithGeometry:leftWall];
+    rightWallNode.rotation = SCNVector4Make(0, 1, 0, -M_PI_2);
+    rightWallNode.position = SCNVector3Make(25, 0, 0);
+    rightWallNode.physicsBody = [SCNPhysicsBody bodyWithType:SCNPhysicsBodyTypeStatic shape:[SCNPhysicsShape shapeWithGeometry:rightWall options:nil]];
+    rightWallNode.physicsBody.physicsShape = [SCNPhysicsShape shapeWithGeometry:rightWall options:nil];
+    rightWallNode.pivot = SCNMatrix4MakeTranslation(0.0, 0.0, 0.0);
+    [scene.rootNode addChildNode:rightWallNode];
     
+    // A plane on X-Y coordinates back
+    // ------------------
+    backWall = [SCNPlane planeWithWidth:50 height:50];
+    backWall.firstMaterial.diffuse.contents = [UIColor blackColor];
+    backWall.firstMaterial.lightingModelName = SCNLightingModelConstant;
+    backWallNode = [SCNNode nodeWithGeometry:leftWall];
+    backWallNode.position = SCNVector3Make(0, 0, -25);
+    backWallNode.physicsBody = [SCNPhysicsBody bodyWithType:SCNPhysicsBodyTypeStatic shape:[SCNPhysicsShape shapeWithGeometry:backWall options:nil]];
+    backWallNode.physicsBody.physicsShape = [SCNPhysicsShape shapeWithGeometry:backWall options:nil];
+    backWallNode.pivot = SCNMatrix4MakeTranslation(0.0, 0.0, 0.0);
+    [scene.rootNode addChildNode:backWallNode];
     
     CGFloat boxSide = 10.0;
     box = [SCNBox boxWithWidth:boxSide
@@ -114,10 +161,16 @@
                          chamferRadius:1.0];
     box.firstMaterial.specular.contents = [UIColor whiteColor];
     boxNode = [SCNNode nodeWithGeometry:box];
-    boxNode.physicsBody = [SCNPhysicsBody bodyWithType:SCNPhysicsBodyTypeKinematic shape:[SCNPhysicsShape shapeWithGeometry:box options:nil]];
-    boxNode.pivot = SCNMatrix4MakeTranslation(0.0, -box.height/2, 0.0);
-    boxNode.position = SCNVector3Make(0.0, floorNode.position.y, 0.0);
+    boxNode.physicsBody = [SCNPhysicsBody bodyWithType:SCNPhysicsBodyTypeDynamic shape:[SCNPhysicsShape shapeWithGeometry:box options:nil]];
+//    boxNode.pivot = SCNMatrix4MakeTranslation(0.0, -box.height/2, 0.0);
+    boxNode.position = SCNVector3Make(0.0, box.height/2, 0.0);
     [scene.rootNode addChildNode: boxNode];
+    
+    leftWallNode.physicsBody.categoryBitMask = CollisionCategoryWall;
+    boxNode.physicsBody.categoryBitMask = CollisionCategoryCube;
+    
+    leftWallNode.physicsBody.collisionBitMask = CollisionCategoryCube;
+    boxNode.physicsBody.collisionBitMask = CollisionCategoryWall;
     
     cameraNode = [SCNNode node];
     cameraNode.camera = [SCNCamera camera];
@@ -395,7 +448,16 @@
      * Keep Y value (stick on floor)
      */
     if (position) {
-        boxNode.position = SCNVector3Make(boxNode.position.x + x_varible, floorNode.position.y, boxNode.position.z + z_varible);
+//        if (ABS(boxNode.position.x + x_varible) >= 20 || ABS(boxNode.position.z + z_varible) >= 20) {
+//            return;
+//        }
+        
+        boxNode.physicsBody = nil;
+        leftWallNode.physicsBody = nil;
+        boxNode.physicsBody = [SCNPhysicsBody bodyWithType:SCNPhysicsBodyTypeDynamic shape:[SCNPhysicsShape shapeWithGeometry:box options:nil]];
+        leftWallNode.physicsBody = [SCNPhysicsBody bodyWithType:SCNPhysicsBodyTypeStatic shape:[SCNPhysicsShape shapeWithGeometry:leftWall options:nil]];
+        
+        boxNode.position = SCNVector3Make(boxNode.position.x + x_varible, box.height/2, boxNode.position.z + z_varible);
     }
     
     /*
@@ -434,6 +496,20 @@
         }
         
     }
+}
+
+- (void)touchesEnded:(NSSet *)touches withEvent:(UIEvent *)event
+{
+    
+    boxNode.position = SCNVector3Make(boxNode.position.x, boxNode.position.y, boxNode.position.z);
+    boxNode.physicsBody = nil;
+    leftWallNode.physicsBody = nil;
+    rightWallNode.physicsBody = nil;
+    backWallNode.physicsBody = nil;
+    boxNode.physicsBody = [SCNPhysicsBody bodyWithType:SCNPhysicsBodyTypeDynamic shape:[SCNPhysicsShape shapeWithGeometry:box options:nil]];
+    leftWallNode.physicsBody = [SCNPhysicsBody bodyWithType:SCNPhysicsBodyTypeStatic shape:[SCNPhysicsShape shapeWithGeometry:leftWall options:nil]];
+    rightWallNode.physicsBody = [SCNPhysicsBody bodyWithType:SCNPhysicsBodyTypeStatic shape:[SCNPhysicsShape shapeWithGeometry:rightWall options:nil]];
+    backWallNode.physicsBody = [SCNPhysicsBody bodyWithType:SCNPhysicsBodyTypeStatic shape:[SCNPhysicsShape shapeWithGeometry:backWall options:nil]];
 }
 
 - (void)didReceiveMemoryWarning {

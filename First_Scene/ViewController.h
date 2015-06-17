@@ -8,8 +8,9 @@
 
 #import <UIKit/UIKit.h>
 #import <SceneKit/SceneKit.h>
+#import <SpriteKit/SpriteKit.h> 
 
-@interface ViewController : UIViewController
+@interface ViewController : UIViewController <SCNPhysicsContactDelegate>
 
 @property (weak, nonatomic) IBOutlet SCNView *myScnView;
 
