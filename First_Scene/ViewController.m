@@ -16,6 +16,7 @@ typedef NS_OPTIONS(NSUInteger, CollisionCategory) {
 
 @interface ViewController ()
 {
+    // Geometry
     SCNNode                     *floorNode;
     SCNBox                      *box;
     SCNBox                      *cube;
@@ -25,30 +26,39 @@ typedef NS_OPTIONS(NSUInteger, CollisionCategory) {
     SCNPlane                    *frontWall;
     SCNPlane                    *floor;
     SCNText                     *boxText;
+    SCNLight                    *light;
+    SCNLight                    *omniLight;
+    SCNLight                    *spotlight;
+    SCNLight                    *ambientLight;
+    
+    // Nodes
     SCNNode                     *boxNode;
     SCNNode                     *cubeNode;
     SCNNode                     *cameraNode;
+    SCNNode                     *cameraOrbit;
     SCNNode                     *boxTextNode;
     SCNNode                     *leftWallNode;
     SCNNode                     *rightWallNode;
     SCNNode                     *backWallNode;
     SCNNode                     *frontWallNode;
+    
+    // Position Parameters
     CGFloat                     lastRotation;
-    SCNLight                    *light;
-    SCNLight                    *omniLight;
-    SCNLight                    *spotlight;
-    SCNLight                    *ambientLight;
+
     UIPanGestureRecognizer      *panGesture;
     UIPinchGestureRecognizer    *pinchGesture;
     CGFloat                     cameraY;
     CGFloat                     cameraZ;
     CGFloat                     cameraX;
     
+    CGPoint                     touchPoint;
+    
     float   moveStartTime;
     float   intervalTime;
     
     BOOL    position;
     BOOL    review;
+    BOOL    rotateCam;
     BOOL    sizeBtn;
 }
 
@@ -57,6 +67,7 @@ typedef NS_OPTIONS(NSUInteger, CollisionCategory) {
 @property (weak, nonatomic) IBOutlet UIButton *uib_size;
 @property (weak, nonatomic) IBOutlet UIButton *uib_color;
 @property (weak, nonatomic) IBOutlet UIButton *uib_freeCam;
+@property (weak, nonatomic) IBOutlet UIButton *uib_rotateCam;
 
 @property (weak, nonatomic) IBOutlet UIView *uiv_colorContainer;
 @property (weak, nonatomic) IBOutlet UIButton *uib_yellow;
@@ -273,12 +284,17 @@ typedef NS_OPTIONS(NSUInteger, CollisionCategory) {
     cameraNode = [SCNNode node];
     cameraNode.camera = [SCNCamera camera];
     cameraNode.position = SCNVector3Make(0.0, 20.0, 30.0);
+    cameraNode.rotation = SCNVector4Make(1, 0, 0, -atan2(10.0, 20.0));
     cameraNode.camera.zFar = 500;
+    cameraNode.camera.zNear = 10;
     cameraX = 0.0;
     cameraY = 20.0;
     cameraZ = 30.0;
-    cameraNode.rotation = SCNVector4Make(1, 0, 0, -atan2(10.0, 20.0));
-    [myScnView.scene.rootNode addChildNode: cameraNode];
+    
+    cameraOrbit = [SCNNode node];
+    [cameraOrbit addChildNode: cameraNode];
+    [myScnView.scene.rootNode addChildNode: cameraOrbit];
+//    [myScnView.scene.rootNode addChildNode: cameraNode];
     
     /*
      * Set text on top of the box
@@ -318,6 +334,19 @@ typedef NS_OPTIONS(NSUInteger, CollisionCategory) {
      */
     self.myScnView.allowsCameraControl = _uib_freeCam.selected;
 }
+
+- (IBAction)tapRotateCam:(id)sender {
+    if (!_uib_rotateCam.selected) {
+        [self resetAllBtns];
+        _uib_rotateCam.selected = YES;
+        rotateCam = YES;
+    }
+    else {
+        [self resetAllBtns];
+    }
+}
+
+
 #pragma mark Color picker
 - (IBAction)tapColorBtn:(id)sender {
     if (!_uib_color.selected) {
@@ -409,6 +438,8 @@ typedef NS_OPTIONS(NSUInteger, CollisionCategory) {
     _uib_size.selected = NO;
     _uib_color.selected = NO;
     _uib_position.selected = NO;
+    _uib_rotateCam.selected = NO;
+    rotateCam = NO;
     review = NO;
     sizeBtn = NO;
     position = NO;
@@ -481,6 +512,7 @@ typedef NS_OPTIONS(NSUInteger, CollisionCategory) {
 - (void)touchesBegan:(NSSet *)touches withEvent:(UIEvent *)event
 {
     moveStartTime = event.timestamp;
+    touchPoint = [[touches anyObject] locationInView: myScnView];
 }
 
 - (void)touchesMoved:(NSSet *)touches withEvent:(UIEvent *)event
@@ -504,6 +536,17 @@ typedef NS_OPTIONS(NSUInteger, CollisionCategory) {
     CGFloat z_varible = location_3d.z - prevLocation_3d.z;
     
     intervalTime = event.timestamp - moveStartTime;
+    
+    if (rotateCam) {
+        CGFloat moveDistance = (point.x - touchPoint.x);
+//        CGFloat raidus = cameraNode.position.z;
+//        cameraOrbit.eulerAngles.y = float(-2.0 * M_PI * (moveDistance/raidus));
+//        cameraOrbit.eulerAngles.x = float(-M_PI * (moveDistance/raidus));
+        NSLog(@"\n\n the original is %f\n\n", lastRotation);
+        NSLog(@"\n\n the angle is %f\n\n", -2.0 * M_PI * (moveDistance/myScnView.frame.size.width));
+        cameraOrbit.eulerAngles = SCNVector3Make(0.0, lastRotation-2.0 * M_PI * (moveDistance/myScnView.frame.size.width),0.0);
+
+    }
     
     if (ABS(x_varible/intervalTime) >= 400) {
         return;
@@ -595,6 +638,30 @@ typedef NS_OPTIONS(NSUInteger, CollisionCategory) {
 - (void)touchesEnded:(NSSet *)touches withEvent:(UIEvent *)event
 {
     [self resetCubeAndWallsBody];
+    
+    if (rotateCam) {
+        
+//          ######## Do Transaction to simulate #############
+        
+//        CGPoint point = [[touches anyObject] locationInView:myScnView];
+//        intervalTime = event.timestamp - moveStartTime;
+//        float speed = (point.x - touchPoint.x)/intervalTime;
+//        NSLog(@"\n\nThe speed is %f\n\n", speed);
+//        [SCNTransaction begin];
+//        [SCNTransaction setAnimationDuration:ABS(speed/1000)];
+//        [SCNTransaction setAnimationTimingFunction: [CAMediaTimingFunction functionWithName:kCAMediaTimingFunctionEaseOut]];
+//        cameraOrbit.eulerAngles = SCNVector3Make(0.0, -2.0 * M_PI * ((point.x - touchPoint.x)*ABS(speed/1000)/myScnView.frame.size.width), 0.0);
+//        [SCNTransaction commit];
+        
+        
+//        [cameraOrbit runAction:[SCNAction repeatActionForever:[SCNAction rotateByX:0 y:1.0 z:0 duration:1]]];
+        
+//        cameraOrbit.rotation = cameraOrbit.presentationNode.rotation;
+        
+        NSLog(@"\n\n Presentation:\n %f \n %f \n %f \n %f \n\n Normal:\n %f \n %f \n %f \n %f \n", cameraOrbit.presentationNode.rotation.x, cameraOrbit.presentationNode.rotation.y, cameraOrbit.presentationNode.rotation.z, cameraOrbit.presentationNode.rotation.w, cameraOrbit.rotation.x, cameraOrbit.rotation.y, cameraOrbit.rotation.z, cameraOrbit.rotation.w);
+        
+        lastRotation = cameraOrbit.rotation.w;
+    }
 }
 
 - (void)resetCubeAndWallsBody
