@@ -9,8 +9,9 @@
 #import "ViewController.h"
 
 typedef NS_OPTIONS(NSUInteger, CollisionCategory) {
-    CollisionCategoryWall    = 0x1 << 0,
-    CollisionCategoryCube    = 0x1 << 1,
+    CollisionCategoryWall   = 0x1 << 0,
+    CollisionCategoryBox    = 0x1 << 1,
+    CollisionCategoryCube   = 0x1 << 2,
 };
 
 @interface ViewController ()
@@ -127,7 +128,7 @@ typedef NS_OPTIONS(NSUInteger, CollisionCategory) {
     // A plane on Y-Z coordinates left as left wall
     // ------------------
     leftWall = [SCNPlane planeWithWidth:50 height:50];
-    leftWall.firstMaterial.diffuse.contents = [UIColor blackColor];
+    leftWall.firstMaterial.diffuse.contents = [UIColor clearColor];
     leftWall.firstMaterial.lightingModelName = SCNLightingModelConstant;
     leftWallNode = [SCNNode nodeWithGeometry:leftWall];
     leftWallNode.rotation = SCNVector4Make(0, 1, 0, M_PI_2);
@@ -219,19 +220,35 @@ typedef NS_OPTIONS(NSUInteger, CollisionCategory) {
     /*
      *  Create box and it's node, added to myScnView
      */
-    CGFloat boxSide = 10.0;
-    box = [SCNBox boxWithWidth:boxSide
-                        height:boxSide
-                        length:boxSide
+    CGFloat boxSize = 10.0;
+    box = [SCNBox boxWithWidth:boxSize
+                        height:boxSize
+                        length:boxSize
                  chamferRadius:1.0];
     box.firstMaterial.diffuse.contents = [UIColor whiteColor];
     boxNode = [SCNNode nodeWithGeometry:box];
     boxNode.physicsBody = [SCNPhysicsBody bodyWithType:SCNPhysicsBodyTypeDynamic
-                                                 shape:[SCNPhysicsShape shapeWithGeometry:[SCNBox boxWithWidth:20 height:20 length:20 chamferRadius:0.0] options:nil]];
+                                                 shape:[SCNPhysicsShape shapeWithGeometry:box options:nil]];
     boxNode.physicsBody.restitution = 0.0;
     boxNode.physicsBody.angularDamping = 1.0;
-    boxNode.position = SCNVector3Make(0.0, box.height/2, 0.0);
+    boxNode.position = SCNVector3Make(-10.0, box.height/2, 0.0);
     [myScnView.scene.rootNode addChildNode: boxNode];
+    
+    /*
+     * Create No.2 cube
+     */
+    cube = [SCNBox boxWithWidth:boxSize
+                         height:boxSize
+                         length:boxSize
+                  chamferRadius:1.0];
+    cube.firstMaterial.diffuse.contents = [UIColor whiteColor];
+    cubeNode = [SCNNode nodeWithGeometry:cube];
+    cubeNode.physicsBody = [SCNPhysicsBody bodyWithType:SCNPhysicsBodyTypeDynamic
+                                                 shape:[SCNPhysicsShape shapeWithGeometry:cube options:nil]];
+    cubeNode.physicsBody.restitution = 0.0;
+    cubeNode.physicsBody.angularDamping = 1.0;
+    cubeNode.position = SCNVector3Make(15.0, cube.height/2, 0.0);
+    [myScnView.scene.rootNode addChildNode: cubeNode];
     
     /*
      * Set up collision bit masks to box and all walls
@@ -240,13 +257,15 @@ typedef NS_OPTIONS(NSUInteger, CollisionCategory) {
     rightWallNode.physicsBody.categoryBitMask = CollisionCategoryWall;
     backWallNode.physicsBody.categoryBitMask = CollisionCategoryWall;
     frontWallNode.physicsBody.categoryBitMask = CollisionCategoryWall;
-    boxNode.physicsBody.categoryBitMask = CollisionCategoryCube;
+    boxNode.physicsBody.categoryBitMask = CollisionCategoryBox;
+    cubeNode.physicsBody.categoryBitMask = CollisionCategoryCube;
     
-    leftWallNode.physicsBody.collisionBitMask = CollisionCategoryCube;
-    rightWallNode.physicsBody.collisionBitMask = CollisionCategoryCube;
-    backWallNode.physicsBody.collisionBitMask = CollisionCategoryCube;
-    frontWallNode.physicsBody.collisionBitMask = CollisionCategoryCube;
-    boxNode.physicsBody.collisionBitMask = CollisionCategoryWall;
+    leftWallNode.physicsBody.collisionBitMask = CollisionCategoryBox | CollisionCategoryCube;
+    rightWallNode.physicsBody.collisionBitMask = CollisionCategoryBox | CollisionCategoryCube;
+    backWallNode.physicsBody.collisionBitMask = CollisionCategoryBox | CollisionCategoryCube;
+    frontWallNode.physicsBody.collisionBitMask = CollisionCategoryBox | CollisionCategoryCube;
+    boxNode.physicsBody.collisionBitMask = CollisionCategoryWall | CollisionCategoryCube;
+    cubeNode.physicsBody.collisionBitMask = CollisionCategoryWall| CollisionCategoryBox;
     
     /*
      * Added view camera
@@ -584,23 +603,42 @@ typedef NS_OPTIONS(NSUInteger, CollisionCategory) {
      * Reset all physics body
      */
     boxNode.physicsBody = nil;
+    cubeNode.physicsBody = nil;
     leftWallNode.physicsBody = nil;
     rightWallNode.physicsBody = nil;
     backWallNode.physicsBody = nil;
     frontWallNode.physicsBody = nil;
     floorNode.physicsBody = nil;
-    boxNode.physicsBody = [SCNPhysicsBody bodyWithType:SCNPhysicsBodyTypeDynamic shape:[SCNPhysicsShape shapeWithGeometry:box options:nil]];
-    leftWallNode.physicsBody = [SCNPhysicsBody bodyWithType:SCNPhysicsBodyTypeStatic shape:[SCNPhysicsShape shapeWithGeometry:leftWall options:nil]];
-    rightWallNode.physicsBody = [SCNPhysicsBody bodyWithType:SCNPhysicsBodyTypeStatic shape:[SCNPhysicsShape shapeWithGeometry:rightWall options:nil]];
-    backWallNode.physicsBody = [SCNPhysicsBody bodyWithType:SCNPhysicsBodyTypeStatic shape:[SCNPhysicsShape shapeWithGeometry:backWall options:nil]];
-    frontWallNode.physicsBody = [SCNPhysicsBody bodyWithType:SCNPhysicsBodyTypeStatic shape:[SCNPhysicsShape shapeWithGeometry:frontWall options:nil]];
-    floorNode.physicsBody = [SCNPhysicsBody bodyWithType:SCNPhysicsBodyTypeStatic shape:[SCNPhysicsShape shapeWithGeometry:floor options:nil]];
+    boxNode.physicsBody = [SCNPhysicsBody bodyWithType:SCNPhysicsBodyTypeDynamic
+                                                 shape:[SCNPhysicsShape shapeWithGeometry:box options:nil]];
+    
+    cubeNode.physicsBody = [SCNPhysicsBody bodyWithType:SCNPhysicsBodyTypeDynamic
+                                                  shape:[SCNPhysicsShape shapeWithGeometry:cube options:nil]];
+    
+    leftWallNode.physicsBody = [SCNPhysicsBody bodyWithType:SCNPhysicsBodyTypeStatic
+                                                      shape:[SCNPhysicsShape shapeWithGeometry:leftWall options:nil]];
+    
+    rightWallNode.physicsBody = [SCNPhysicsBody bodyWithType:SCNPhysicsBodyTypeStatic
+                                                       shape:[SCNPhysicsShape shapeWithGeometry:rightWall options:nil]];
+    
+    backWallNode.physicsBody = [SCNPhysicsBody bodyWithType:SCNPhysicsBodyTypeStatic
+                                                      shape:[SCNPhysicsShape shapeWithGeometry:backWall options:nil]];
+    
+    frontWallNode.physicsBody = [SCNPhysicsBody bodyWithType:SCNPhysicsBodyTypeStatic
+                                                       shape:[SCNPhysicsShape shapeWithGeometry:frontWall options:nil]];
+    
+    floorNode.physicsBody = [SCNPhysicsBody bodyWithType:SCNPhysicsBodyTypeStatic
+                                                   shape:[SCNPhysicsShape shapeWithGeometry:floor options:nil]];
     
     boxNode.physicsBody.restitution = 1.0;
     boxNode.physicsBody.angularDamping = 1.0;
     boxNode.physicsBody.angularVelocityFactor = SCNVector3Make(0.0, 1.0, 0.0);
-    boxNode.physicsBody.friction = 1.8;
-    floorNode.physicsBody.friction = 1.8;
+    boxNode.physicsBody.friction = 1.0;
+    cubeNode.physicsBody.restitution = 1.0;
+    cubeNode.physicsBody.angularDamping = 1.0;
+    cubeNode.physicsBody.angularVelocityFactor = SCNVector3Make(0.0, 1.0, 0.0);
+    cubeNode.physicsBody.friction = 1.0;
+    floorNode.physicsBody.friction = 1.0;
 }
 
 @end
