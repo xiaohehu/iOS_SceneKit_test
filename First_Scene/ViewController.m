@@ -17,15 +17,18 @@ typedef NS_OPTIONS(NSUInteger, CollisionCategory) {
 {
     SCNNode                     *floorNode;
     SCNBox                      *box;
-    SCNBox                    *leftWall;
+    SCNPlane                    *leftWall;
     SCNPlane                    *rightWall;
     SCNPlane                    *backWall;
+    SCNPlane                    *frontWall;
+    SCNPlane                    *floor;
     SCNNode                     *boxNode;
     SCNNode                     *cameraNode;
     SCNNode                     *textNode;
     SCNNode                     *leftWallNode;
     SCNNode                     *rightWallNode;
     SCNNode                     *backWallNode;
+    SCNNode                     *frontWallNode;
     CGFloat                     lastRotation;
     SCNLight                    *light;
     SCNLight                    *omniLight;
@@ -43,8 +46,6 @@ typedef NS_OPTIONS(NSUInteger, CollisionCategory) {
     BOOL    position;
     BOOL    review;
     BOOL    sizeBtn;
-    BOOL    collision;
-    BOOL    detectedCollision;
 }
 
 @property (weak, nonatomic) IBOutlet UIButton *uib_view;
@@ -63,23 +64,6 @@ typedef NS_OPTIONS(NSUInteger, CollisionCategory) {
 @implementation ViewController
 
 @synthesize myScnView;
-
-- (void)physicsWorld:(SCNPhysicsWorld *)world didBeginContact:(SCNPhysicsContact *)contact
-{
-//    if (detectedCollision) {
-//        return;
-//    }
-    CollisionCategory contactMask =
-    contact.nodeA.physicsBody.categoryBitMask | contact.nodeB.physicsBody.categoryBitMask;
-
-    if (contactMask == (CollisionCategoryCube | CollisionCategoryWall))
-    {
-//        NSLog(@"\n\nFind Collision\n\n");
-        position = NO;
-        collision = YES;
-        return;
-    }
-}
 
 - (void)physicsWorld:(SCNPhysicsWorld *)world didEndContact:(SCNPhysicsContact *)contact
 {
@@ -118,7 +102,7 @@ typedef NS_OPTIONS(NSUInteger, CollisionCategory) {
     
     // A plane on X-Z coordinates
     // ------------------
-    SCNPlane *floor = [SCNPlane planeWithWidth:50 height:50];
+    floor = [SCNPlane planeWithWidth:50 height:50];
     floor.firstMaterial.diffuse.contents = [UIColor colorWithRed:79.0/255.0 green:191.0/255.0 blue:76.0/255.0 alpha:1.0];
     floor.firstMaterial.lightingModelName = SCNLightingModelConstant;
     floorNode = [SCNNode nodeWithGeometry:floor];
@@ -131,14 +115,11 @@ typedef NS_OPTIONS(NSUInteger, CollisionCategory) {
 
     // A plane on Y-Z coordinates left
     // ------------------
-    leftWall = [SCNBox boxWithWidth:5
-                             height:50
-                             length:50
-                      chamferRadius:0.0];
+    leftWall = [SCNPlane planeWithWidth:50 height:50];
     leftWall.firstMaterial.diffuse.contents = [UIColor blackColor];
 //    leftWall.firstMaterial.lightingModelName = SCNLightingModelConstant;
     leftWallNode = [SCNNode nodeWithGeometry:leftWall];
-//    leftWallNode.rotation = SCNVector4Make(0, 1, 0, M_PI_2);
+    leftWallNode.rotation = SCNVector4Make(0, 1, 0, M_PI_2);
     leftWallNode.position = SCNVector3Make(-25, 0, 0);
     leftWallNode.physicsBody = [SCNPhysicsBody bodyWithType:SCNPhysicsBodyTypeStatic shape:[SCNPhysicsShape shapeWithGeometry:leftWall options:nil]];
     leftWallNode.physicsBody.physicsShape = [SCNPhysicsShape shapeWithGeometry:leftWall options:nil];
@@ -172,14 +153,26 @@ typedef NS_OPTIONS(NSUInteger, CollisionCategory) {
     backWallNode.pivot = SCNMatrix4MakeTranslation(0.0, 0.0, 0.0);
     [scene.rootNode addChildNode:backWallNode];
     
+    // A plane on X-Y coordinates front
+    // ------------------
+    frontWall = [SCNPlane planeWithWidth:50 height:50];
+    frontWall.firstMaterial.diffuse.contents = [UIColor clearColor];
+    frontWall.firstMaterial.lightingModelName = SCNLightingModelConstant;
+    frontWallNode = [SCNNode nodeWithGeometry:frontWall];
+    frontWallNode.position = SCNVector3Make(0, 0, 25);
+    frontWallNode.physicsBody = [SCNPhysicsBody bodyWithType:SCNPhysicsBodyTypeStatic shape:[SCNPhysicsShape shapeWithGeometry:frontWall options:nil]];
+    frontWallNode.physicsBody.physicsShape = [SCNPhysicsShape shapeWithGeometry:frontWall options:nil];
+    frontWallNode.pivot = SCNMatrix4MakeTranslation(0.0, 0.0, 0.0);
+    [scene.rootNode addChildNode:frontWallNode];
+    
     CGFloat boxSide = 10.0;
     box = [SCNBox boxWithWidth:boxSide
                                 height:boxSide
                                 length:boxSide
                          chamferRadius:1.0];
-    box.firstMaterial.specular.contents = [UIColor whiteColor];
+    box.firstMaterial.diffuse.contents = [UIColor whiteColor];
     boxNode = [SCNNode nodeWithGeometry:box];
-    boxNode.physicsBody = [SCNPhysicsBody bodyWithType:SCNPhysicsBodyTypeKinematic
+    boxNode.physicsBody = [SCNPhysicsBody bodyWithType:SCNPhysicsBodyTypeDynamic
                                                  shape:[SCNPhysicsShape shapeWithGeometry:[SCNBox boxWithWidth:20 height:20 length:20 chamferRadius:0.0] options:nil]];
     boxNode.physicsBody.restitution = 0.0;
     boxNode.physicsBody.angularDamping = 1.0;
@@ -190,11 +183,13 @@ typedef NS_OPTIONS(NSUInteger, CollisionCategory) {
     leftWallNode.physicsBody.categoryBitMask = CollisionCategoryWall;
     rightWallNode.physicsBody.categoryBitMask = CollisionCategoryWall;
     backWallNode.physicsBody.categoryBitMask = CollisionCategoryWall;
+    frontWallNode.physicsBody.categoryBitMask = CollisionCategoryWall;
     boxNode.physicsBody.categoryBitMask = CollisionCategoryCube;
     
     leftWallNode.physicsBody.collisionBitMask = CollisionCategoryCube;
     rightWallNode.physicsBody.collisionBitMask = CollisionCategoryCube;
     backWallNode.physicsBody.collisionBitMask = CollisionCategoryCube;
+    frontWallNode.physicsBody.collisionBitMask = CollisionCategoryCube;
     boxNode.physicsBody.collisionBitMask = CollisionCategoryWall;
     
     cameraNode = [SCNNode node];
@@ -471,29 +466,50 @@ typedef NS_OPTIONS(NSUInteger, CollisionCategory) {
     
     intervalTime = event.timestamp - moveStartTime;
     
-    NSLog(@"\n\nThe speed is %f", x_varible/intervalTime);
-    
-    if (ABS(x_varible/intervalTime) >= 8) {
+    if (ABS(x_varible/intervalTime) >= 400) {
         return;
     }
-    
-    /*
-     * Change position of the box
-     * Keep Y value (stick on floor)
-     */
-    
-    if (collision) {
-//        collision = NO;
-        [self bounceCubeBack:x_varible and:z_varible];
-        return;
-    }
-    
-    if (position) {
-//        if (ABS(boxNode.position.x + x_varible) >= 20 || ABS(boxNode.position.z + z_varible) >= 20) {
-//            return;
-//        }
-        [self resetCubeAndWallsBody];
-        boxNode.position = SCNVector3Make(boxNode.position.x + x_varible, box.height/2, boxNode.position.z + z_varible);
+    else
+    {
+        /*
+         * Change position of the box
+         * Keep Y value (stick on floor)
+         */
+        if (position) {
+            //        if (ABS(boxNode.position.x + x_varible) >= 20 || ABS(boxNode.position.z + z_varible) >= 20) {
+            //            return;
+            //        }
+            [self resetCubeAndWallsBody];
+            
+            /*
+             * ############# POSITION
+             */
+            
+//            boxNode.position = SCNVector3Make(boxNode.position.x + x_varible, box.height/2, boxNode.position.z + z_varible);
+            
+            
+            /*
+             * #############VELOCITY
+             */
+            
+//            if (x_varible > 0) {
+//                boxNode.physicsBody.velocity = SCNVector3Make(100.0, 0.0, 0.0);
+//            }
+//            if (x_varible < 0) {
+//                boxNode.physicsBody.velocity = SCNVector3Make(-100.0, 0.0, 0.0);
+//            }
+//            if (z_varible > 0) {
+//                boxNode.physicsBody.velocity = SCNVector3Make(0.0, 0.0, 100.0);
+//            }
+//            if (z_varible < 0) {
+//                boxNode.physicsBody.velocity = SCNVector3Make(0.0, 0.0, -100.0);
+//            }
+            
+            
+            boxNode.physicsBody.velocity = SCNVector3Make(x_varible*80, 0.0, z_varible*80);
+            
+            
+        }
     }
     
     /*
@@ -504,32 +520,35 @@ typedef NS_OPTIONS(NSUInteger, CollisionCategory) {
          * ###### Change the scale is not a good method
          * ###### Always reset the scale when begin moving #######
          */
-//        boxNode.scale = SCNVector3Make(boxNode.scale.x * fabsf(location_3d.x/10),
-//                                       boxNode.scale.y * fabsf(location_3d.y/10),
-//                                       boxNode.scale.z * fabsf(location_3d.z/10));
+        boxNode.pivot = SCNMatrix4MakeTranslation(0.0, -box.height/2, 0.0);
+        boxNode.position = SCNVector3Make(0.0, 0, 0.0);
+
+        boxNode.scale = SCNVector3Make(boxNode.scale.x * fabsf(location_3d.x/10),
+                                       boxNode.scale.y * fabsf(location_3d.y/10),
+                                       boxNode.scale.z * fabsf(location_3d.z/10));
         
-//        boxNode.scale = SCNVector3Make(fabsf(location_3d.x/10),
-//                                       fabsf(location_3d.y/10),
-//                                       fabsf(location_3d.z/10));
+        boxNode.scale = SCNVector3Make(fabsf(location_3d.x/10),
+                                       fabsf(location_3d.y/10),
+                                       fabsf(location_3d.z/10));
         
         /*
          * Change box's size according to the move distance
          */
-        box.height = location_3d.y+10;
-        box.width = location_3d.x+10;
-        box.length = location_3d.z+10;
-       
-        if (box.height * box.width * box.length <= 0) {
-            return;
-        }
-        else {
-            /*
-             * Change pivot of the node keep it always on top of floor
-             */
-            boxNode.pivot = SCNMatrix4MakeTranslation(0.0, -box.height/2, 0.0);
-            boxNode.position = SCNVector3Make(0.0, floorNode.position.y, 0.0);
-            textNode.position = SCNVector3Make(textNode.position.x, box.height/2+2, textNode.position.z);
-        }
+//        box.height = location_3d.y+10;
+//        box.width = location_3d.x+10;
+//        box.length = location_3d.z+10;
+//       
+//        if (box.height * box.width * box.length <= 0) {
+//            return;
+//        }
+//        else {
+//            /*
+//             * Change pivot of the node keep it always on top of floor
+//             */
+//            boxNode.pivot = SCNMatrix4MakeTranslation(0.0, -box.height/2, 0.0);
+//            boxNode.position = SCNVector3Make(0.0, box.height/2, 0.0);
+//            textNode.position = SCNVector3Make(textNode.position.x, box.height/2, textNode.position.z);
+//        }
         
     }
 }
@@ -537,58 +556,28 @@ typedef NS_OPTIONS(NSUInteger, CollisionCategory) {
 - (void)touchesEnded:(NSSet *)touches withEvent:(UIEvent *)event
 {
     [self resetCubeAndWallsBody];
-//    NSLog(@"\n\n Thouch ends \n\n");
 }
-
-- (void)bounceCubeBack:(float)x_direction and:(float)z_direction
-{
-//    NSLog(@"\n\nThe x value is %f \n\n z value is %f", x_direction, z_direction);
-//    detectedCollision = YES;
-    if (x_direction < 0) {
-        
-//        NSLog(@"Should do the animation");
-        
-        boxNode.position = SCNVector3Make(boxNode.position.x + 2, boxNode.position.y, boxNode.position.z);
-        
-        position = YES;
-        collision = NO;
-        return;
-        
-    }
-    
-    if (x_direction >= 0) {
-        
-//        NSLog(@"Should do the animation");
-        
-        boxNode.position = SCNVector3Make(boxNode.position.x - 2, boxNode.position.y, boxNode.position.z);
-        
-        position = YES;
-        collision = NO;
-//        detectedCollision = NO;
-    }
-}
-
-
-//- (void)animationDidStop:(CAAnimation *)anim finished:(BOOL)flag
-//{
-//    NSLog(@"\n\n\n Animation finished");
-//    position = YES;
-//    collision = NO;
-//    detectedCollision = NO;
-//
-//}
 
 - (void)resetCubeAndWallsBody
 {
-//    boxNode.position = SCNVector3Make(boxNode.position.x, boxNode.position.y, boxNode.position.z);
     boxNode.physicsBody = nil;
     leftWallNode.physicsBody = nil;
     rightWallNode.physicsBody = nil;
     backWallNode.physicsBody = nil;
+    frontWallNode.physicsBody = nil;
+    floorNode.physicsBody = nil;
     boxNode.physicsBody = [SCNPhysicsBody bodyWithType:SCNPhysicsBodyTypeDynamic shape:[SCNPhysicsShape shapeWithGeometry:box options:nil]];
     leftWallNode.physicsBody = [SCNPhysicsBody bodyWithType:SCNPhysicsBodyTypeStatic shape:[SCNPhysicsShape shapeWithGeometry:leftWall options:nil]];
     rightWallNode.physicsBody = [SCNPhysicsBody bodyWithType:SCNPhysicsBodyTypeStatic shape:[SCNPhysicsShape shapeWithGeometry:rightWall options:nil]];
     backWallNode.physicsBody = [SCNPhysicsBody bodyWithType:SCNPhysicsBodyTypeStatic shape:[SCNPhysicsShape shapeWithGeometry:backWall options:nil]];
+    frontWallNode.physicsBody = [SCNPhysicsBody bodyWithType:SCNPhysicsBodyTypeStatic shape:[SCNPhysicsShape shapeWithGeometry:frontWall options:nil]];
+    floorNode.physicsBody = [SCNPhysicsBody bodyWithType:SCNPhysicsBodyTypeStatic shape:[SCNPhysicsShape shapeWithGeometry:floor options:nil]];
+    
+    boxNode.physicsBody.restitution = 1.0;
+    boxNode.physicsBody.angularDamping = 1.0;
+    boxNode.physicsBody.angularVelocityFactor = SCNVector3Make(0.0, 1.0, 0.0);
+    boxNode.physicsBody.friction = 1.8;
+    floorNode.physicsBody.friction = 1.8;
 }
 
 - (void)didReceiveMemoryWarning {
