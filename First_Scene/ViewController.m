@@ -310,11 +310,11 @@ typedef NS_OPTIONS(NSUInteger, CollisionCategory) {
     boxTextNode.position = SCNVector3Make(-2.5,
                                        box.height/2 + 2,
                                        0);
-    SCNNode *tempNode = [SCNNode node];
-    tempNode.position = SCNVector3Make(0, 0, -50000);
-    [myScnView.scene.rootNode addChildNode: tempNode];
-    SCNLookAtConstraint *constraint = [SCNLookAtConstraint lookAtConstraintWithTarget:tempNode];
-    boxTextNode.constraints = @[constraint];
+//    SCNNode *tempNode = [SCNNode node];
+//    tempNode.position = SCNVector3Make(0, 0, -50000);
+//    [myScnView.scene.rootNode addChildNode: tempNode];
+//    SCNLookAtConstraint *constraint = [SCNLookAtConstraint lookAtConstraintWithTarget:tempNode];
+//    boxTextNode.constraints = @[constraint];
     [boxNode addChildNode: boxTextNode];
     
     light = [SCNLight light];
@@ -542,10 +542,12 @@ typedef NS_OPTIONS(NSUInteger, CollisionCategory) {
 //        CGFloat raidus = cameraNode.position.z;
 //        cameraOrbit.eulerAngles.y = float(-2.0 * M_PI * (moveDistance/raidus));
 //        cameraOrbit.eulerAngles.x = float(-M_PI * (moveDistance/raidus));
+        
         NSLog(@"\n\n the original is %f\n\n", lastRotation);
         NSLog(@"\n\n the angle is %f\n\n", -2.0 * M_PI * (moveDistance/myScnView.frame.size.width));
+        
         cameraOrbit.eulerAngles = SCNVector3Make(0.0, lastRotation-2.0 * M_PI * (moveDistance/myScnView.frame.size.width),0.0);
-
+        
     }
     
     if (ABS(x_varible/intervalTime) >= 400) {
@@ -660,7 +662,15 @@ typedef NS_OPTIONS(NSUInteger, CollisionCategory) {
         
         NSLog(@"\n\n Presentation:\n %f \n %f \n %f \n %f \n\n Normal:\n %f \n %f \n %f \n %f \n", cameraOrbit.presentationNode.rotation.x, cameraOrbit.presentationNode.rotation.y, cameraOrbit.presentationNode.rotation.z, cameraOrbit.presentationNode.rotation.w, cameraOrbit.rotation.x, cameraOrbit.rotation.y, cameraOrbit.rotation.z, cameraOrbit.rotation.w);
         
-        lastRotation = cameraOrbit.rotation.w;
+        if (cameraOrbit.rotation.y < 0) {
+            lastRotation =  -cameraOrbit.rotation.w ;
+        }
+        else {
+            lastRotation = cameraOrbit.rotation.w;
+        }
+        if (lastRotation > 6.28) {
+            lastRotation = 0;
+        }
     }
 }
 
