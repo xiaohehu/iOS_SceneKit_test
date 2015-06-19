@@ -17,14 +17,17 @@ typedef NS_OPTIONS(NSUInteger, CollisionCategory) {
 {
     SCNNode                     *floorNode;
     SCNBox                      *box;
+    SCNBox                      *cube;
     SCNPlane                    *leftWall;
     SCNPlane                    *rightWall;
     SCNPlane                    *backWall;
     SCNPlane                    *frontWall;
     SCNPlane                    *floor;
+    SCNText                     *boxText;
     SCNNode                     *boxNode;
+    SCNNode                     *cubeNode;
     SCNNode                     *cameraNode;
-    SCNNode                     *textNode;
+    SCNNode                     *boxTextNode;
     SCNNode                     *leftWallNode;
     SCNNode                     *rightWallNode;
     SCNNode                     *backWallNode;
@@ -65,17 +68,25 @@ typedef NS_OPTIONS(NSUInteger, CollisionCategory) {
 
 @synthesize myScnView;
 
-- (void)physicsWorld:(SCNPhysicsWorld *)world didEndContact:(SCNPhysicsContact *)contact
-{
-//    position = YES;
-}
-
+#pragma mark - ViewController Life-cycle
 - (void)viewDidLoad {
     [super viewDidLoad];
     // Do any additional setup after loading the view, typically from a nib.
     
-//    myScnView.scene.physicsWorld.gravity = SCNVector3Make(0, 0, 0);
+    [self buildEnvironment];
     
+    [self addElementToEnvironment];
+}
+
+
+- (void)didReceiveMemoryWarning {
+    [super didReceiveMemoryWarning];
+    // Dispose of any resources that can be recreated.
+}
+
+#pragma mark - Build up environment & Add Elements
+- (void)buildEnvironment
+{
     SCNScene *scene = [SCNScene scene];
     myScnView.scene = scene;
     myScnView.scene.physicsWorld.gravity = SCNVector3Make(0.0, 0.0, 0.0);
@@ -86,38 +97,38 @@ typedef NS_OPTIONS(NSUInteger, CollisionCategory) {
                                               green:120.0/255.0
                                                blue:255.0/255.0
                                               alpha:1.0];
-//    // A reflective floor
-//    // ------------------
-//    SCNFloor *floor = [SCNFloor floor];
-//    // A solid white color, not affected by light
-//    floor.firstMaterial.diffuse.contents = [UIColor colorWithRed:79.0/255.0 green:191.0/255.0 blue:76.0/255.0 alpha:1.0];
-//    floor.firstMaterial.lightingModelName = SCNLightingModelConstant;
-//    // Less reflective and decrease by distance
-//    floor.reflectivity = 0;
-//    floor.reflectionFalloffEnd = 0;
-//    floorNode = [SCNNode nodeWithGeometry:floor];
-//    floorNode.position = SCNVector3Make(0, -5, 0);
-//    floorNode.physicsBody = [SCNPhysicsBody bodyWithType:SCNPhysicsBodyTypeKinematic shape:[SCNPhysicsShape shapeWithGeometry:floor options:nil]];
-//    [scene.rootNode addChildNode:floorNode];
+    //    // A reflective floor
+    //    // ------------------
+    //    SCNFloor *floor = [SCNFloor floor];
+    //    // A solid white color, not affected by light
+    //    floor.firstMaterial.diffuse.contents = [UIColor colorWithRed:79.0/255.0 green:191.0/255.0 blue:76.0/255.0 alpha:1.0];
+    //    floor.firstMaterial.lightingModelName = SCNLightingModelConstant;
+    //    // Less reflective and decrease by distance
+    //    floor.reflectivity = 0;
+    //    floor.reflectionFalloffEnd = 0;
+    //    floorNode = [SCNNode nodeWithGeometry:floor];
+    //    floorNode.position = SCNVector3Make(0, -5, 0);
+    //    floorNode.physicsBody = [SCNPhysicsBody bodyWithType:SCNPhysicsBodyTypeKinematic shape:[SCNPhysicsShape shapeWithGeometry:floor options:nil]];
+    //    [scene.rootNode addChildNode:floorNode];
     
-    // A plane on X-Z coordinates
+    // A plane on X-Z coordinates as floor
     // ------------------
     floor = [SCNPlane planeWithWidth:50 height:50];
     floor.firstMaterial.diffuse.contents = [UIColor colorWithRed:79.0/255.0 green:191.0/255.0 blue:76.0/255.0 alpha:1.0];
     floor.firstMaterial.lightingModelName = SCNLightingModelConstant;
     floorNode = [SCNNode nodeWithGeometry:floor];
     floorNode.position = SCNVector3Make(0, 0, 0);
-//    floorNode.physicsBody = [SCNPhysicsBody bodyWithType:SCNPhysicsBodyTypeKinematic shape:[SCNPhysicsShape shapeWithGeometry:floor options:nil]];
+    floorNode.physicsBody = [SCNPhysicsBody bodyWithType:SCNPhysicsBodyTypeStatic shape:[SCNPhysicsShape shapeWithGeometry:floor options:nil]];
     floorNode.pivot = SCNMatrix4MakeTranslation(0.0, 0.0, 0.0);
     floorNode.rotation = SCNVector4Make(1, 0, 0, -M_PI_2);
     floorNode.physicsBody.friction = 0.5;
     [scene.rootNode addChildNode:floorNode];
-
-    // A plane on Y-Z coordinates left
+    
+    // A plane on Y-Z coordinates left as left wall
     // ------------------
     leftWall = [SCNPlane planeWithWidth:50 height:50];
     leftWall.firstMaterial.diffuse.contents = [UIColor blackColor];
-//    leftWall.firstMaterial.lightingModelName = SCNLightingModelConstant;
+    leftWall.firstMaterial.lightingModelName = SCNLightingModelConstant;
     leftWallNode = [SCNNode nodeWithGeometry:leftWall];
     leftWallNode.rotation = SCNVector4Make(0, 1, 0, M_PI_2);
     leftWallNode.position = SCNVector3Make(-25, 0, 0);
@@ -125,10 +136,9 @@ typedef NS_OPTIONS(NSUInteger, CollisionCategory) {
     leftWallNode.physicsBody.physicsShape = [SCNPhysicsShape shapeWithGeometry:leftWall options:nil];
     leftWallNode.physicsBody.restitution = 0.0;
     leftWallNode.physicsBody.angularDamping = 1.0;
-//    leftWallNode.pivot = SCNMatrix4MakeTranslation(0.0, 0.0, 0.0);
     [scene.rootNode addChildNode:leftWallNode];
     
-    // A plane on Y-Z coordinates right
+    // A plane on Y-Z coordinates right as right wall
     // ------------------
     rightWall = [SCNPlane planeWithWidth:50 height:50];
     rightWall.firstMaterial.diffuse.contents = [UIColor clearColor];
@@ -141,7 +151,7 @@ typedef NS_OPTIONS(NSUInteger, CollisionCategory) {
     rightWallNode.pivot = SCNMatrix4MakeTranslation(0.0, 0.0, 0.0);
     [scene.rootNode addChildNode:rightWallNode];
     
-    // A plane on X-Y coordinates back
+    // A plane on X-Y coordinates back as back wall
     // ------------------
     backWall = [SCNPlane planeWithWidth:50 height:50];
     backWall.firstMaterial.diffuse.contents = [UIColor clearColor];
@@ -153,7 +163,7 @@ typedef NS_OPTIONS(NSUInteger, CollisionCategory) {
     backWallNode.pivot = SCNMatrix4MakeTranslation(0.0, 0.0, 0.0);
     [scene.rootNode addChildNode:backWallNode];
     
-    // A plane on X-Y coordinates front
+    // A plane on X-Y coordinates front as front wall
     // ------------------
     frontWall = [SCNPlane planeWithWidth:50 height:50];
     frontWall.firstMaterial.diffuse.contents = [UIColor clearColor];
@@ -165,21 +175,67 @@ typedef NS_OPTIONS(NSUInteger, CollisionCategory) {
     frontWallNode.pivot = SCNMatrix4MakeTranslation(0.0, 0.0, 0.0);
     [scene.rootNode addChildNode:frontWallNode];
     
+    /*
+     * Omni Light
+     */
+    //    omniLight = [SCNLight light];
+    //    omniLight.type = SCNLightTypeOmni;
+    //    omniLight.color = lightBlueColor;
+    //    omniLight.attenuationStartDistance = 15;
+    //    omniLight.attenuationEndDistance = 20;
+    //    SCNNode *omniLightNode = [SCNNode node];
+    //    omniLightNode.light = omniLight;
+    //    [self.myScnView.scene.rootNode addChildNode: omniLightNode];
+    
+    /*
+     * Spot Light
+     */
+    //    spotlight = [SCNLight light];
+    //    spotlight.type = SCNLightTypeSpot;
+    //    spotlight.color = lightBlueColor;
+    //    spotlight.spotInnerAngle = 10;
+    //    spotlight.spotOuterAngle = 15;
+    //    SCNNode *spotLightNode = [SCNNode node];
+    //    spotLightNode.light = spotlight;
+    //    [cameraNode addChildNode: spotLightNode];
+    
+    /*
+     * Ambient Light
+     */
+    ambientLight = [SCNLight light];
+    ambientLight.type = SCNLightTypeAmbient;
+    ambientLight.color = lightBlueColor;
+    SCNNode *ambienLightNode = [SCNNode node];
+    ambienLightNode.light = ambientLight;
+    [self.myScnView.scene.rootNode addChildNode: ambienLightNode];
+}
+
+- (void)addElementToEnvironment
+{
+    UIColor *lightBlueColor = [UIColor colorWithRed:4.0/255.0
+                                              green:120.0/255.0
+                                               blue:255.0/255.0
+                                              alpha:1.0];
+    /*
+     *  Create box and it's node, added to myScnView
+     */
     CGFloat boxSide = 10.0;
     box = [SCNBox boxWithWidth:boxSide
-                                height:boxSide
-                                length:boxSide
-                         chamferRadius:1.0];
+                        height:boxSide
+                        length:boxSide
+                 chamferRadius:1.0];
     box.firstMaterial.diffuse.contents = [UIColor whiteColor];
     boxNode = [SCNNode nodeWithGeometry:box];
     boxNode.physicsBody = [SCNPhysicsBody bodyWithType:SCNPhysicsBodyTypeDynamic
                                                  shape:[SCNPhysicsShape shapeWithGeometry:[SCNBox boxWithWidth:20 height:20 length:20 chamferRadius:0.0] options:nil]];
     boxNode.physicsBody.restitution = 0.0;
     boxNode.physicsBody.angularDamping = 1.0;
-//    boxNode.pivot = SCNMatrix4MakeTranslation(0.0, -box.height/2, 0.0);
     boxNode.position = SCNVector3Make(0.0, box.height/2, 0.0);
-    [scene.rootNode addChildNode: boxNode];
+    [myScnView.scene.rootNode addChildNode: boxNode];
     
+    /*
+     * Set up collision bit masks to box and all walls
+     */
     leftWallNode.physicsBody.categoryBitMask = CollisionCategoryWall;
     rightWallNode.physicsBody.categoryBitMask = CollisionCategoryWall;
     backWallNode.physicsBody.categoryBitMask = CollisionCategoryWall;
@@ -192,6 +248,9 @@ typedef NS_OPTIONS(NSUInteger, CollisionCategory) {
     frontWallNode.physicsBody.collisionBitMask = CollisionCategoryCube;
     boxNode.physicsBody.collisionBitMask = CollisionCategoryWall;
     
+    /*
+     * Added view camera
+     */
     cameraNode = [SCNNode node];
     cameraNode.camera = [SCNCamera camera];
     cameraNode.position = SCNVector3Make(0.0, 20.0, 30.0);
@@ -200,10 +259,11 @@ typedef NS_OPTIONS(NSUInteger, CollisionCategory) {
     cameraY = 20.0;
     cameraZ = 30.0;
     cameraNode.rotation = SCNVector4Make(1, 0, 0, -atan2(10.0, 20.0));
-//    SCNLookAtConstraint *constraint = [SCNLookAtConstraint lookAtConstraintWithTarget:boxNode];
-//    cameraNode.constraints = @[constraint];
-    [scene.rootNode addChildNode: cameraNode];
+    [myScnView.scene.rootNode addChildNode: cameraNode];
     
+    /*
+     * Set text on top of the box
+     */
     NSString *myText = @"HOTEL";
     SCNText *text = [SCNText textWithString:myText
                              extrusionDepth:0.2];
@@ -211,16 +271,16 @@ typedef NS_OPTIONS(NSUInteger, CollisionCategory) {
     [UIColor colorWithWhite:.9 alpha:1.0];
     text.font = [UIFont systemFontOfSize:2.0];
     text.flatness = 0.1;
-    textNode = [SCNNode nodeWithGeometry:text];
-    textNode.position = SCNVector3Make(-2.5,
+    boxTextNode = [SCNNode nodeWithGeometry:text];
+    boxTextNode.position = SCNVector3Make(-2.5,
                                        box.height/2 + 2,
                                        0);
     SCNNode *tempNode = [SCNNode node];
     tempNode.position = SCNVector3Make(0, 0, -50000);
-    [scene.rootNode addChildNode: tempNode];
+    [myScnView.scene.rootNode addChildNode: tempNode];
     SCNLookAtConstraint *constraint = [SCNLookAtConstraint lookAtConstraintWithTarget:tempNode];
-    textNode.constraints = @[constraint];
-    [boxNode addChildNode: textNode];
+    boxTextNode.constraints = @[constraint];
+    [boxNode addChildNode: boxTextNode];
     
     light = [SCNLight light];
     light.type = SCNLightTypeDirectional;
@@ -228,42 +288,9 @@ typedef NS_OPTIONS(NSUInteger, CollisionCategory) {
     SCNNode *lightNode = [SCNNode node];
     lightNode.light = light;
     [cameraNode addChildNode: lightNode];
-    
-    /*
-     * Omni Light
-     */
-//    omniLight = [SCNLight light];
-//    omniLight.type = SCNLightTypeOmni;
-//    omniLight.color = lightBlueColor;
-//    omniLight.attenuationStartDistance = 15;
-//    omniLight.attenuationEndDistance = 20;
-//    SCNNode *omniLightNode = [SCNNode node];
-//    omniLightNode.light = omniLight;
-//    [self.myScnView.scene.rootNode addChildNode: omniLightNode];
-    
-    /*
-     * Spot Light
-     */
-//    spotlight = [SCNLight light];
-//    spotlight.type = SCNLightTypeSpot;
-//    spotlight.color = lightBlueColor;
-//    spotlight.spotInnerAngle = 10;
-//    spotlight.spotOuterAngle = 15;
-//    SCNNode *spotLightNode = [SCNNode node];
-//    spotLightNode.light = spotlight;
-//    [cameraNode addChildNode: spotLightNode];
-    
-    /*
-     * Ambient Light
-     */
-    ambientLight = [SCNLight light];
-    ambientLight.type = SCNLightTypeAmbient;
-    ambientLight.color = lightBlueColor;
-    SCNNode *ambienLightNode = [SCNNode node];
-    ambienLightNode.light = ambientLight;
-    
-    [self.myScnView.scene.rootNode addChildNode: ambienLightNode];
 }
+
+#pragma mark - Action of control buttons
 
 - (IBAction)tapFreeCam:(id)sender {
     _uib_freeCam.selected = !_uib_freeCam.selected;
@@ -272,7 +299,7 @@ typedef NS_OPTIONS(NSUInteger, CollisionCategory) {
      */
     self.myScnView.allowsCameraControl = _uib_freeCam.selected;
 }
-
+#pragma mark Color picker
 - (IBAction)tapColorBtn:(id)sender {
     if (!_uib_color.selected) {
         [self resetAllBtns];
@@ -372,6 +399,8 @@ typedef NS_OPTIONS(NSUInteger, CollisionCategory) {
     pinchGesture = nil;
 }
 
+#pragma mark - Gestures and handlers to scene view
+
 - (void)addGestureToBox
 {
     panGesture = [[UIPanGestureRecognizer alloc] initWithTarget:self action:@selector(handlePan:)];
@@ -390,18 +419,6 @@ typedef NS_OPTIONS(NSUInteger, CollisionCategory) {
          * Pan gesture distance convert to rotation radian
          */
         boxNode.rotation = SCNVector4Make(0, 1, 0, translation.x/180 * M_PI);
-        
-        
-        BOOL isVisible = [myScnView isNodeInsideFrustum:boxNode withPointOfView:myScnView.pointOfView];
-        if (!isVisible) {
-            NSLog(@"\n\n Off the screen \n\n");
-        }
-
-        BOOL isInCamera = [myScnView isNodeInsideFrustum:boxNode
-                                               withPointOfView:myScnView.pointOfView];
-        if (!isInCamera) {
-            NSLog(@"\n\n Off the camera");
-        }
         
         /*
          * Change camera's Y position to move up & down
@@ -424,6 +441,9 @@ typedef NS_OPTIONS(NSUInteger, CollisionCategory) {
     
     if(gesture.state == UIGestureRecognizerStateChanged)
     {
+        /*
+         * According to the pinch scale change camera's Z position
+         */
         float scale = gesture.scale;
         float maxDistance = 90;
         float minDistance = 10;
@@ -560,6 +580,9 @@ typedef NS_OPTIONS(NSUInteger, CollisionCategory) {
 
 - (void)resetCubeAndWallsBody
 {
+    /*
+     * Reset all physics body
+     */
     boxNode.physicsBody = nil;
     leftWallNode.physicsBody = nil;
     rightWallNode.physicsBody = nil;
@@ -578,11 +601,6 @@ typedef NS_OPTIONS(NSUInteger, CollisionCategory) {
     boxNode.physicsBody.angularVelocityFactor = SCNVector3Make(0.0, 1.0, 0.0);
     boxNode.physicsBody.friction = 1.8;
     floorNode.physicsBody.friction = 1.8;
-}
-
-- (void)didReceiveMemoryWarning {
-    [super didReceiveMemoryWarning];
-    // Dispose of any resources that can be recreated.
 }
 
 @end
