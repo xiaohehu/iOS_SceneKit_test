@@ -7,14 +7,14 @@
 	<key>IDESourceControlProjectIdentifier</key>
 	<string>038887E6-586D-42FF-B09B-A62752F4E559</string>
 	<key>IDESourceControlProjectName</key>
-	<string>project</string>
+	<string>First_Scene</string>
 	<key>IDESourceControlProjectOriginsDictionary</key>
 	<dict>
 		<key>17E31D08319270A4F6AFDB651A3620E879DED988</key>
 		<string>https://github.com/xiaohehu/iOS_SceneKit_test.git</string>
 	</dict>
 	<key>IDESourceControlProjectPath</key>
-	<string>First_Scene.xcodeproj/project.xcworkspace</string>
+	<string>First_Scene.xcodeproj</string>
 	<key>IDESourceControlProjectRelativeInstallPathDictionary</key>
 	<dict>
 		<key>17E31D08319270A4F6AFDB651A3620E879DED988</key>

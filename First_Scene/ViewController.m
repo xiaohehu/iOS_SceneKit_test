@@ -55,7 +55,7 @@ typedef NS_OPTIONS(NSUInteger, CollisionCategory) {
     
     float   moveStartTime;
     float   intervalTime;
-    
+    float   speed;
     BOOL    position;
     BOOL    review;
     BOOL    rotateCam;
@@ -307,14 +307,29 @@ typedef NS_OPTIONS(NSUInteger, CollisionCategory) {
     text.font = [UIFont systemFontOfSize:2.0];
     text.flatness = 0.1;
     boxTextNode = [SCNNode nodeWithGeometry:text];
+    
     boxTextNode.position = SCNVector3Make(-2.5,
                                        box.height/2 + 2,
                                        0);
-//    SCNNode *tempNode = [SCNNode node];
-//    tempNode.position = SCNVector3Make(0, 0, -50000);
-//    [myScnView.scene.rootNode addChildNode: tempNode];
-//    SCNLookAtConstraint *constraint = [SCNLookAtConstraint lookAtConstraintWithTarget:tempNode];
+    
+//    boxTextNode.position = SCNVector3Make(-2.5,
+//                                          12,
+//                                          0);
+    
+//    SCNLookAtConstraint *constraint = [SCNLookAtConstraint lookAtConstraintWithTarget:cameraNode];
 //    boxTextNode.constraints = @[constraint];
+    
+//    boxTextNode.pivot = SCNMatrix4MakeRotation(-M_PI, 1, 0, 0);
+    
+    
+//    boxTextNode.rotation = SCNVector4Make(1, 0, 0, -M_PI);
+//    boxTextNode.rotation = SCNVector4Make(0, 1, 0, M_PI);
+    
+    SCNNode *tempNode = [SCNNode node];
+    tempNode.position = SCNVector3Make(0, 0, -50000);
+    [myScnView.scene.rootNode addChildNode: tempNode];
+    SCNLookAtConstraint *constraint = [SCNLookAtConstraint lookAtConstraintWithTarget:tempNode];
+    boxTextNode.constraints = @[constraint];
     [boxNode addChildNode: boxTextNode];
     
     light = [SCNLight light];
@@ -536,15 +551,15 @@ typedef NS_OPTIONS(NSUInteger, CollisionCategory) {
     CGFloat z_varible = location_3d.z - prevLocation_3d.z;
     
     intervalTime = event.timestamp - moveStartTime;
-    
+    speed = (point.x - touchPoint.x)/intervalTime;
     if (rotateCam) {
         CGFloat moveDistance = (point.x - touchPoint.x);
 //        CGFloat raidus = cameraNode.position.z;
 //        cameraOrbit.eulerAngles.y = float(-2.0 * M_PI * (moveDistance/raidus));
 //        cameraOrbit.eulerAngles.x = float(-M_PI * (moveDistance/raidus));
         
-        NSLog(@"\n\n the original is %f\n\n", lastRotation);
-        NSLog(@"\n\n the angle is %f\n\n", -2.0 * M_PI * (moveDistance/myScnView.frame.size.width));
+//        NSLog(@"\n\n the original is %f\n\n", lastRotation);
+//        NSLog(@"\n\n the angle is %f\n\n", -2.0 * M_PI * (moveDistance/myScnView.frame.size.width));
         
         cameraOrbit.eulerAngles = SCNVector3Make(0.0, lastRotation-2.0 * M_PI * (moveDistance/myScnView.frame.size.width),0.0);
         
@@ -648,19 +663,30 @@ typedef NS_OPTIONS(NSUInteger, CollisionCategory) {
 //        CGPoint point = [[touches anyObject] locationInView:myScnView];
 //        intervalTime = event.timestamp - moveStartTime;
 //        float speed = (point.x - touchPoint.x)/intervalTime;
-//        NSLog(@"\n\nThe speed is %f\n\n", speed);
+        NSLog(@"\n\nThe speed is %f\n\n", speed);
 //        [SCNTransaction begin];
 //        [SCNTransaction setAnimationDuration:ABS(speed/1000)];
 //        [SCNTransaction setAnimationTimingFunction: [CAMediaTimingFunction functionWithName:kCAMediaTimingFunctionEaseOut]];
-//        cameraOrbit.eulerAngles = SCNVector3Make(0.0, -2.0 * M_PI * ((point.x - touchPoint.x)*ABS(speed/1000)/myScnView.frame.size.width), 0.0);
+//        cameraOrbit.eulerAngles = SCNVector3Make(0.0, cameraOrbit.eulerAngles.y-2.0 * M_PI *(ABS(speed/100)*ABS(speed/100)/4/myScnView.frame.size.width), 0.0);
 //        [SCNTransaction commit];
+        
+        
+        // If a = 15
+        float n = (speed/1000)*(speed/1000)/40/2*M_PI*5*sqrtf(2.0);
+        NSLog(@"\n\n Num of rounds %f", n);
+        [SCNTransaction begin];
+        [SCNTransaction setAnimationDuration:ABS(speed/1000)/20];
+        [SCNTransaction setAnimationTimingFunction: [CAMediaTimingFunction functionWithName:kCAMediaTimingFunctionEaseOut]];
+        cameraOrbit.eulerAngles = SCNVector3Make(0.0, cameraOrbit.eulerAngles.y-2.0 * M_PI *n*speed/ABS(speed), 0.0);
+        [SCNTransaction commit];
+        
         
         
 //        [cameraOrbit runAction:[SCNAction repeatActionForever:[SCNAction rotateByX:0 y:1.0 z:0 duration:1]]];
         
 //        cameraOrbit.rotation = cameraOrbit.presentationNode.rotation;
         
-        NSLog(@"\n\n Presentation:\n %f \n %f \n %f \n %f \n\n Normal:\n %f \n %f \n %f \n %f \n", cameraOrbit.presentationNode.rotation.x, cameraOrbit.presentationNode.rotation.y, cameraOrbit.presentationNode.rotation.z, cameraOrbit.presentationNode.rotation.w, cameraOrbit.rotation.x, cameraOrbit.rotation.y, cameraOrbit.rotation.z, cameraOrbit.rotation.w);
+//        NSLog(@"\n\n Presentation:\n %f \n %f \n %f \n %f \n\n Normal:\n %f \n %f \n %f \n %f \n", cameraOrbit.presentationNode.rotation.x, cameraOrbit.presentationNode.rotation.y, cameraOrbit.presentationNode.rotation.z, cameraOrbit.presentationNode.rotation.w, cameraOrbit.rotation.x, cameraOrbit.rotation.y, cameraOrbit.rotation.z, cameraOrbit.rotation.w);
         
         if (cameraOrbit.rotation.y < 0) {
             lastRotation =  -cameraOrbit.rotation.w ;
