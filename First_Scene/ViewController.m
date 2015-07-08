@@ -9,17 +9,18 @@
 #import "ViewController.h"
 
 typedef NS_OPTIONS(NSUInteger, CollisionCategory) {
-    CollisionCategoryWall   = 0x1 << 0,
-    CollisionCategoryBox    = 0x1 << 1,
-    CollisionCategoryCube   = 0x1 << 2,
+    CollisionCategoryWall       = 0x1 << 0,
+    CollisionCategoryBox        = 0x1 << 1,
+    CollisionCategoryCube       = 0x1 << 2,
+    CollisionCategoryCubeBlock  = 0x1 << 3,
 };
 
 @interface ViewController ()
 {
     // Geometry
-    SCNNode                     *floorNode;
     SCNBox                      *box;
     SCNBox                      *cube;
+    SCNBox                      *cube_block;
     SCNPlane                    *leftWall;
     SCNPlane                    *rightWall;
     SCNPlane                    *backWall;
@@ -32,8 +33,10 @@ typedef NS_OPTIONS(NSUInteger, CollisionCategory) {
     SCNLight                    *ambientLight;
     
     // Nodes
+    SCNNode                     *floorNode;
     SCNNode                     *boxNode;
     SCNNode                     *cubeNode;
+    SCNNode                     *cube_blockNode;
     SCNNode                     *cameraNode;
     SCNNode                     *cameraOrbit;
     SCNNode                     *boxTextNode;
@@ -53,22 +56,28 @@ typedef NS_OPTIONS(NSUInteger, CollisionCategory) {
     
     CGPoint                     touchPoint;
     
-    float   moveStartTime;
-    float   intervalTime;
-    float   speed;
-    BOOL    position;
-    BOOL    review;
-    BOOL    rotateCam;
-    BOOL    sizeBtn;
+    float                       moveStartTime;
+    float                       intervalTime;
+    float                       speed;
+    BOOL                        position;
+    BOOL                        review;
+    BOOL                        rotateCam;
+    BOOL                        sizeBtn;
+    BOOL                        editNode;
+    NSArray                     *arr_shapes;
+    
+    int                         box_shapeIndex;
+    int                         cube_shapeIndex;
 }
-
+// UIButtons
 @property (weak, nonatomic) IBOutlet UIButton *uib_view;
 @property (weak, nonatomic) IBOutlet UIButton *uib_position;
 @property (weak, nonatomic) IBOutlet UIButton *uib_size;
 @property (weak, nonatomic) IBOutlet UIButton *uib_color;
 @property (weak, nonatomic) IBOutlet UIButton *uib_freeCam;
 @property (weak, nonatomic) IBOutlet UIButton *uib_rotateCam;
-
+@property (weak, nonatomic) IBOutlet UIButton *uib_edit;
+// Color picker
 @property (weak, nonatomic) IBOutlet UIView *uiv_colorContainer;
 @property (weak, nonatomic) IBOutlet UIButton *uib_yellow;
 @property (weak, nonatomic) IBOutlet UIButton *uib_blue;
@@ -82,12 +91,14 @@ typedef NS_OPTIONS(NSUInteger, CollisionCategory) {
 
 #pragma mark - ViewController Life-cycle
 - (void)viewDidLoad {
+    
     [super viewDidLoad];
-    // Do any additional setup after loading the view, typically from a nib.
     
     [self buildEnvironment];
     
     [self addElementToEnvironment];
+    
+    [self createShapesArray];
 }
 
 
@@ -96,9 +107,31 @@ typedef NS_OPTIONS(NSUInteger, CollisionCategory) {
     // Dispose of any resources that can be recreated.
 }
 
+#pragma mark - Create Nessary Data
+- (void)createShapesArray {
+    SCNBox *boxShape = [SCNBox boxWithWidth:10.0
+                                      height:10.0
+                                      length:10.0
+                               chamferRadius:1.0];
+    
+    SCNSphere *shpereShape = [SCNSphere sphereWithRadius:5.0];
+    
+    SCNCylinder *cylinderShape = [SCNCylinder cylinderWithRadius:5.0 height:10.0];
+    
+    arr_shapes = @[boxShape, shpereShape, cylinderShape];
+    
+    box_shapeIndex = 0;
+    cube_shapeIndex = 0;
+}
 #pragma mark - Build up environment & Add Elements
+/*
+ * Create floor and walls for whole scene
+ */
 - (void)buildEnvironment
 {
+    /*
+     * Init the root scene
+     */
     SCNScene *scene = [SCNScene scene];
     myScnView.scene = scene;
     myScnView.scene.physicsWorld.gravity = SCNVector3Make(0.0, 0.0, 0.0);
@@ -222,6 +255,9 @@ typedef NS_OPTIONS(NSUInteger, CollisionCategory) {
     [self.myScnView.scene.rootNode addChildNode: ambienLightNode];
 }
 
+/*
+ * Add cubes and make physics body
+ */
 - (void)addElementToEnvironment
 {
     UIColor *lightBlueColor = [UIColor colorWithRed:4.0/255.0
@@ -262,6 +298,18 @@ typedef NS_OPTIONS(NSUInteger, CollisionCategory) {
     [myScnView.scene.rootNode addChildNode: cubeNode];
     
     /*
+     * Create Cube to block
+     */
+    cube_block = [SCNBox boxWithWidth:boxSize
+                               height:boxSize
+                               length:boxSize
+                        chamferRadius:0.0];
+    cube_block.firstMaterial.diffuse.contents = [UIColor blackColor];
+    cube_blockNode = [SCNNode nodeWithGeometry:cube_block];
+    cube_blockNode.physicsBody = [SCNPhysicsBody bodyWithType:SCNPhysicsBodyTypeStatic shape:[SCNPhysicsShape shapeWithGeometry:cube_block options:nil]];
+    cube_blockNode.position = SCNVector3Make(20.0, cube.height/2, 20);
+    [myScnView.scene.rootNode addChildNode: cube_blockNode];
+    /*
      * Set up collision bit masks to box and all walls
      */
     leftWallNode.physicsBody.categoryBitMask = CollisionCategoryWall;
@@ -270,13 +318,14 @@ typedef NS_OPTIONS(NSUInteger, CollisionCategory) {
     frontWallNode.physicsBody.categoryBitMask = CollisionCategoryWall;
     boxNode.physicsBody.categoryBitMask = CollisionCategoryBox;
     cubeNode.physicsBody.categoryBitMask = CollisionCategoryCube;
+    cube_blockNode.physicsBody.categoryBitMask = CollisionCategoryCubeBlock;
     
     leftWallNode.physicsBody.collisionBitMask = CollisionCategoryBox | CollisionCategoryCube;
     rightWallNode.physicsBody.collisionBitMask = CollisionCategoryBox | CollisionCategoryCube;
     backWallNode.physicsBody.collisionBitMask = CollisionCategoryBox | CollisionCategoryCube;
     frontWallNode.physicsBody.collisionBitMask = CollisionCategoryBox | CollisionCategoryCube;
-    boxNode.physicsBody.collisionBitMask = CollisionCategoryWall | CollisionCategoryCube;
-    cubeNode.physicsBody.collisionBitMask = CollisionCategoryWall| CollisionCategoryBox;
+    boxNode.physicsBody.collisionBitMask = CollisionCategoryWall | CollisionCategoryCube | CollisionCategoryCubeBlock;
+    cubeNode.physicsBody.collisionBitMask = CollisionCategoryWall| CollisionCategoryBox | CollisionCategoryCubeBlock;
     
     /*
      * Added view camera
@@ -290,7 +339,9 @@ typedef NS_OPTIONS(NSUInteger, CollisionCategory) {
     cameraX = 0.0;
     cameraY = 20.0;
     cameraZ = 30.0;
-    
+    /*
+     * Add camera orbit to rotate camera node
+     */
     cameraOrbit = [SCNNode node];
     [cameraOrbit addChildNode: cameraNode];
     [myScnView.scene.rootNode addChildNode: cameraOrbit];
@@ -325,6 +376,9 @@ typedef NS_OPTIONS(NSUInteger, CollisionCategory) {
 //    boxTextNode.rotation = SCNVector4Make(1, 0, 0, -M_PI);
 //    boxTextNode.rotation = SCNVector4Make(0, 1, 0, M_PI);
     
+    /*
+     * Temp method to make text node looking at the camera by adding a node in far away position
+     */
     SCNNode *tempNode = [SCNNode node];
     tempNode.position = SCNVector3Make(0, 0, -50000);
     [myScnView.scene.rootNode addChildNode: tempNode];
@@ -332,6 +386,9 @@ typedef NS_OPTIONS(NSUInteger, CollisionCategory) {
     boxTextNode.constraints = @[constraint];
     [boxNode addChildNode: boxTextNode];
     
+    /*
+     * Added light node along with the camera
+     */
     light = [SCNLight light];
     light.type = SCNLightTypeDirectional;
     light.color = lightBlueColor;
@@ -350,6 +407,20 @@ typedef NS_OPTIONS(NSUInteger, CollisionCategory) {
     self.myScnView.allowsCameraControl = _uib_freeCam.selected;
 }
 
+#pragma mark Edit scene node
+- (IBAction)tapEditBtn:(id)sender {
+    if (!_uib_edit.selected) {
+        [self resetAllBtns];
+        _uib_edit.selected = YES;
+        editNode = YES;
+        [self addEditGesutreToBox];
+    }
+    else {
+        [self resetAllBtns];
+    }
+}
+
+#pragma mark Camera rotation
 - (IBAction)tapRotateCam:(id)sender {
     if (!_uib_rotateCam.selected) {
         [self resetAllBtns];
@@ -409,6 +480,7 @@ typedef NS_OPTIONS(NSUInteger, CollisionCategory) {
     }
 }
 
+#pragma mark Change view along Y direction and rotate the cube
 - (IBAction)tapViewBtn:(id)sender {
     
     if (!_uib_view.selected) {
@@ -422,6 +494,7 @@ typedef NS_OPTIONS(NSUInteger, CollisionCategory) {
     }
 }
 
+#pragma mark Change cube's position on floor (keep Y value)
 - (IBAction)tapPositionBtn:(id)sender {
 
     if (!_uib_position.selected) {
@@ -434,6 +507,7 @@ typedef NS_OPTIONS(NSUInteger, CollisionCategory) {
     }
 }
 
+#pragma mark Change width/height/length of the cube
 - (IBAction)tapSizeBtn:(id)sender {
 
     if (!_uib_size.selected) {
@@ -448,16 +522,21 @@ typedef NS_OPTIONS(NSUInteger, CollisionCategory) {
 
 - (void)resetAllBtns
 {
+    // Unselected all buttons
     _uiv_colorContainer.hidden = YES;
     _uib_view.selected = NO;
     _uib_size.selected = NO;
     _uib_color.selected = NO;
     _uib_position.selected = NO;
     _uib_rotateCam.selected = NO;
+    _uib_edit.selected = NO;
+    // Set all BOOL parameter to NO
     rotateCam = NO;
     review = NO;
     sizeBtn = NO;
     position = NO;
+    editNode = NO;
+    // Remove gestures
     [myScnView removeGestureRecognizer:panGesture];
     [myScnView removeGestureRecognizer:pinchGesture];
     panGesture = nil;
@@ -466,6 +545,38 @@ typedef NS_OPTIONS(NSUInteger, CollisionCategory) {
 
 #pragma mark - Gestures and handlers to scene view
 
+#pragma mark Edit cube gesutres
+- (void)addEditGesutreToBox {
+    UITapGestureRecognizer *tapBox = [[UITapGestureRecognizer alloc] initWithTarget:self action:@selector(tapOnBox:)];
+    [myScnView addGestureRecognizer: tapBox];
+}
+
+- (void)tapOnBox:(UITapGestureRecognizer *)gesture {
+    CGPoint point = [gesture locationInView: myScnView];
+    NSArray *hits = [myScnView hitTest:point
+                               options:nil];
+    for (SCNHitTestResult *hit in hits) {
+        
+        if ([hit.node isEqual: boxNode]) {
+            box_shapeIndex++;
+            if (box_shapeIndex == 3) {
+                box_shapeIndex = 0;
+            }
+            hit.node.geometry = arr_shapes[box_shapeIndex];
+        } else if ([hit.node isEqual: cubeNode]) {
+            cube_shapeIndex++;
+            if (cube_shapeIndex == 3) {
+                cube_shapeIndex = 0;
+            }
+            hit.node.geometry = arr_shapes[cube_shapeIndex];
+        } else {
+            return;
+        }
+    }
+    
+}
+
+#pragma mark View gestures
 - (void)addGestureToBox
 {
     panGesture = [[UIPanGestureRecognizer alloc] initWithTarget:self action:@selector(handlePan:)];
@@ -524,6 +635,7 @@ typedef NS_OPTIONS(NSUInteger, CollisionCategory) {
     }
 }
 
+#pragma mark General touch methods
 - (void)touchesBegan:(NSSet *)touches withEvent:(UIEvent *)event
 {
     moveStartTime = event.timestamp;
@@ -649,6 +761,10 @@ typedef NS_OPTIONS(NSUInteger, CollisionCategory) {
 //            textNode.position = SCNVector3Make(textNode.position.x, box.height/2, textNode.position.z);
 //        }
         
+    }
+    
+    if (editNode) {
+        return;
     }
 }
 
