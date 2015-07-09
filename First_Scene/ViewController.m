@@ -65,7 +65,7 @@ typedef NS_OPTIONS(NSUInteger, CollisionCategory) {
     BOOL                        sizeBtn;
     BOOL                        editNode;
     NSArray                     *arr_shapes;
-    
+    NSArray                     *arr_cameraPositions;
     int                         box_shapeIndex;
     int                         cube_shapeIndex;
 }
@@ -101,6 +101,9 @@ typedef NS_OPTIONS(NSUInteger, CollisionCategory) {
     [self createShapesArray];
 }
 
+- (void)viewWillAppear:(BOOL)animated {
+    [self defaultMode];
+}
 
 - (void)didReceiveMemoryWarning {
     [super didReceiveMemoryWarning];
@@ -123,6 +126,35 @@ typedef NS_OPTIONS(NSUInteger, CollisionCategory) {
     box_shapeIndex = 0;
     cube_shapeIndex = 0;
 }
+
+- (void)createCameraPositionArray {
+    SCNVector3 position1 = SCNVector3Make(0.0, 20.0, 30.0);
+    SCNVector3 position2 = SCNVector3Make(-20.0, 20.0, 30.0);
+    SCNVector3 position3 = SCNVector3Make(0.0, 20.0, -30.0);
+    NSValue *position1_value = [NSValue valueWithSCNVector3:position1];
+    NSValue *position2_value = [NSValue valueWithSCNVector3:position2];
+    NSValue *position3_value = [NSValue valueWithSCNVector3:position3];
+    arr_cameraPositions = @[position1_value, position2_value, position3_value];
+}
+
+#pragma mark - Defaul mode
+
+- (void)defaultMode {
+    // Turn on tap and drag func
+//    _uib_position.selected = YES;
+//    position = YES;
+    [self addLongPressToNodes];
+    
+    // Turn on tap change shape and 1 step rotation
+    _uib_edit.selected = YES;
+    editNode = YES;
+    [self addEditGesutreToBox];
+    
+    // Trun on pan gesture to rotate camera
+    _uib_rotateCam.selected = YES;
+    rotateCam = YES;
+}
+
 #pragma mark - Build up environment & Add Elements
 /*
  * Create floor and walls for whole scene
@@ -159,7 +191,7 @@ typedef NS_OPTIONS(NSUInteger, CollisionCategory) {
     // A plane on X-Z coordinates as floor
     // ------------------
     floor = [SCNPlane planeWithWidth:50 height:50];
-    floor.firstMaterial.diffuse.contents = [UIColor colorWithRed:79.0/255.0 green:191.0/255.0 blue:76.0/255.0 alpha:1.0];
+    floor.firstMaterial.diffuse.contents = [UIColor lightGrayColor];
     floor.firstMaterial.lightingModelName = SCNLightingModelConstant;
     floorNode = [SCNNode nodeWithGeometry:floor];
     floorNode.position = SCNVector3Make(0, 0, 0);
@@ -304,7 +336,7 @@ typedef NS_OPTIONS(NSUInteger, CollisionCategory) {
                                height:boxSize
                                length:boxSize
                         chamferRadius:0.0];
-    cube_block.firstMaterial.diffuse.contents = [UIColor blackColor];
+    cube_block.firstMaterial.diffuse.contents = [UIColor orangeColor];
     cube_blockNode = [SCNNode nodeWithGeometry:cube_block];
     cube_blockNode.physicsBody = [SCNPhysicsBody bodyWithType:SCNPhysicsBodyTypeStatic shape:[SCNPhysicsShape shapeWithGeometry:cube_block options:nil]];
     cube_blockNode.position = SCNVector3Make(20.0, cube.height/2, 20);
@@ -548,26 +580,72 @@ typedef NS_OPTIONS(NSUInteger, CollisionCategory) {
 
 #pragma mark - Gestures and handlers to scene view
 
+#pragma mark Long press on target node (tap & drag)
+- (void)addLongPressToNodes {
+    UILongPressGestureRecognizer *longPress = [[UILongPressGestureRecognizer alloc] initWithTarget:self action:@selector(longPressOnTarget:)];
+    longPress.minimumPressDuration = 0.3;
+    [myScnView addGestureRecognizer:longPress];
+}
+
+- (void)longPressOnTarget:(UIGestureRecognizer *)gesture {
+    
+    CGPoint point = [gesture locationInView: myScnView];
+    NSArray *hits = [myScnView hitTest:point
+                               options:nil];
+    [self resetCubeAndWallsBody];
+        for (SCNHitTestResult *hit in hits) {
+            
+            if ([hit.node isEqual:boxNode] && gesture.state == UIGestureRecognizerStateBegan) {
+                boxNode.opacity = 0.6;
+            }
+            
+            if ([hit.node isEqual:boxNode] && gesture.state == UIGestureRecognizerStateChanged) {
+                
+                SCNVector3 hitPosition = hit.worldCoordinates;
+                CGFloat hitPositionZ = [myScnView projectPoint: hitPosition].z;
+                SCNVector3 location_3d = [myScnView unprojectPoint:SCNVector3Make(point.x, point.y, hitPositionZ)];
+                SCNVector3 prevLocation_3d = [myScnView unprojectPoint:SCNVector3Make(boxNode.position.x, boxNode.position.y, hitPositionZ)];
+                CGFloat x_varible = location_3d.x - prevLocation_3d.x;
+                CGFloat z_varible = location_3d.z - prevLocation_3d.z;
+                NSLog(@"The x varible is %f", x_varible);
+                if (ABS(x_varible) > 5) {
+                    boxNode.position = SCNVector3Make(prevLocation_3d.x + x_varible, boxNode.position.y, prevLocation_3d.z+z_varible);
+                }
+//                NSLog(@"The point is %@", NSStringFromCGPoint(point));
+            }
+        }
+    if (gesture.state == UIGestureRecognizerStateEnded) {
+        boxNode.opacity = 1.0;
+    }
+}
+
 #pragma mark Edit cube gesutres
 - (void)addEditGesutreToBox {
     UITapGestureRecognizer *tapBox = [[UITapGestureRecognizer alloc] initWithTarget:self action:@selector(tapOnBox:)];
+    tapBox.numberOfTapsRequired = 2;
     [myScnView addGestureRecognizer: tapBox];
     
     UISwipeGestureRecognizer *swipeLeft = [[UISwipeGestureRecognizer alloc] initWithTarget:self action:@selector(swipeToLeft:)];
     swipeLeft.direction = UISwipeGestureRecognizerDirectionLeft;
+    swipeLeft.numberOfTouchesRequired = 1;
     [myScnView addGestureRecognizer:swipeLeft];
     
     UISwipeGestureRecognizer *swipeRight = [[UISwipeGestureRecognizer alloc] initWithTarget:self action:@selector(swipeToRight:)];
     swipeRight.direction = UISwipeGestureRecognizerDirectionRight;
+    swipeLeft.numberOfTouchesRequired = 1;
     [myScnView addGestureRecognizer:swipeRight];
     
 }
 
 - (void)tapOnBox:(UITapGestureRecognizer *)gesture {
+    
     CGPoint point = [gesture locationInView: myScnView];
     NSArray *hits = [myScnView hitTest:point
                                options:nil];
-    NSLog(@"\n\n The Array is %i", hits.count);
+    
+    /*
+     * Loop through hits array, get targets and change the geometry
+     */
     for (SCNHitTestResult *hit in hits) {
         
         if ([hit.node isEqual: boxNode]) {
@@ -623,7 +701,7 @@ typedef NS_OPTIONS(NSUInteger, CollisionCategory) {
     /*
      * If swipe gesture is on target scene node, rotate the target
      */
-    float   rotateAngle = M_PI_4/2 * direction;
+    float   rotateAngle = M_PI_4 * direction;
     NSArray *hits = [myScnView hitTest:point
                                options:nil];
     for (SCNHitTestResult *hit in hits) {
@@ -634,7 +712,7 @@ typedef NS_OPTIONS(NSUInteger, CollisionCategory) {
             cubeNode.rotation = SCNVector4Make(0, 1, 0, cubeNode.rotation.w+rotateAngle);
             hit.node.geometry = arr_shapes[cube_shapeIndex];
         } else {
-            return;
+            continue;
         }
     }
 }
@@ -692,10 +770,10 @@ typedef NS_OPTIONS(NSUInteger, CollisionCategory) {
         cameraNode.position = SCNVector3Make(cameraX, cameraY*(1/scale), cameraZ*(1/scale));
     }
     
-//    if (gesture.state == UIGestureRecognizerStateEnded) {
-//        cameraY = cameraNode.position.y;
-//        cameraZ = cameraNode.position.z;
-//    }
+    if (gesture.state == UIGestureRecognizerStateEnded) {
+        cameraY = cameraNode.position.y;
+        cameraZ = cameraNode.position.z;
+    }
 }
 
 #pragma mark General touch methods
@@ -735,12 +813,13 @@ typedef NS_OPTIONS(NSUInteger, CollisionCategory) {
         
 //        NSLog(@"\n\n the original is %f\n\n", lastRotation);
 //        NSLog(@"\n\n the angle is %f\n\n", -2.0 * M_PI * (moveDistance/myScnView.frame.size.width));
-        
-        cameraOrbit.eulerAngles = SCNVector3Make(0.0, lastRotation-2.0 * M_PI * (moveDistance/myScnView.frame.size.width),0.0);
+        if (touches.count == 2) {
+            cameraOrbit.eulerAngles = SCNVector3Make(0.0, lastRotation-2.0 * M_PI * (moveDistance/myScnView.frame.size.width),0.0);
+        }
         
     }
     
-    if (ABS(x_varible/intervalTime) >= 400) {
+    if (ABS(x_varible/intervalTime) >= 200) {
         return;
     }
     else
@@ -780,9 +859,21 @@ typedef NS_OPTIONS(NSUInteger, CollisionCategory) {
 //            }
             
             
-            boxNode.physicsBody.velocity = SCNVector3Make(x_varible*80, 0.0, z_varible*80);
+//            boxNode.physicsBody.velocity = SCNVector3Make(x_varible*80, 0.0, z_varible*80);
             
-            
+            /*
+             * !!!!TEMP!!!!
+             * IF POSITION IS TURNED ON BY DEFAULT:
+             * AVOID CONFILICTION WITH PAN GESTURE TO ROTATE THE CAMERA
+             */
+            CGPoint point = [touch locationInView: myScnView];
+            // Get the hit on the cube
+            NSArray *hits = [myScnView hitTest:point options:nil];
+            for (SCNHitTestResult *hit in hits) {
+                if ([hit.node isEqual:boxNode]) {
+                    boxNode.physicsBody.velocity = SCNVector3Make(x_varible*80, 0.0, z_varible*80);
+                }
+            }
         }
     }
     
@@ -851,13 +942,13 @@ typedef NS_OPTIONS(NSUInteger, CollisionCategory) {
         
         
         // If a = 15
-        float n = (speed/1000)*(speed/1000)/40/2*M_PI*5*sqrtf(2.0);
-        NSLog(@"\n\n Num of rounds %f", n);
-        [SCNTransaction begin];
-        [SCNTransaction setAnimationDuration:ABS(speed/1000)/20];
-        [SCNTransaction setAnimationTimingFunction: [CAMediaTimingFunction functionWithName:kCAMediaTimingFunctionEaseOut]];
-        cameraOrbit.eulerAngles = SCNVector3Make(0.0, cameraOrbit.eulerAngles.y-2.0 * M_PI *n*speed/ABS(speed), 0.0);
-        [SCNTransaction commit];
+//        float n = (speed/1000)*(speed/1000)/40/2*M_PI*5*sqrtf(2.0);
+//        NSLog(@"\n\n Num of rounds %f", n);
+//        [SCNTransaction begin];
+//        [SCNTransaction setAnimationDuration:ABS(speed/1000)/20];
+//        [SCNTransaction setAnimationTimingFunction: [CAMediaTimingFunction functionWithName:kCAMediaTimingFunctionEaseOut]];
+//        cameraOrbit.eulerAngles = SCNVector3Make(0.0, cameraOrbit.eulerAngles.y-2.0 * M_PI *n*speed/ABS(speed), 0.0);
+//        [SCNTransaction commit];
         
         
         
