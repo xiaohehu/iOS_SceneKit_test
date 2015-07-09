@@ -134,9 +134,9 @@ typedef NS_OPTIONS(NSUInteger, CollisionCategory) {
      */
     SCNScene *scene = [SCNScene scene];
     myScnView.scene = scene;
-    myScnView.scene.physicsWorld.gravity = SCNVector3Make(0.0, 0.0, 0.0);
+    myScnView.scene.physicsWorld.gravity = SCNVector3Make(0.0, -1.0, 0.0);
     myScnView.scene.physicsWorld.contactDelegate = self;
-    myScnView.scene.physicsWorld.timeStep = 1.0/600.0;
+    myScnView.scene.physicsWorld.timeStep = 1.0/60.0;
     
     UIColor *lightBlueColor = [UIColor colorWithRed:4.0/255.0
                                               green:120.0/255.0
@@ -274,7 +274,7 @@ typedef NS_OPTIONS(NSUInteger, CollisionCategory) {
                  chamferRadius:1.0];
     box.firstMaterial.diffuse.contents = [UIColor whiteColor];
     boxNode = [SCNNode nodeWithGeometry:box];
-    boxNode.physicsBody = [SCNPhysicsBody bodyWithType:SCNPhysicsBodyTypeDynamic
+    boxNode.physicsBody = [SCNPhysicsBody bodyWithType:SCNPhysicsBodyTypeStatic
                                                  shape:[SCNPhysicsShape shapeWithGeometry:box options:nil]];
     boxNode.physicsBody.restitution = 0.0;
     boxNode.physicsBody.angularDamping = 1.0;
@@ -537,8 +537,11 @@ typedef NS_OPTIONS(NSUInteger, CollisionCategory) {
     position = NO;
     editNode = NO;
     // Remove gestures
-    [myScnView removeGestureRecognizer:panGesture];
-    [myScnView removeGestureRecognizer:pinchGesture];
+//    [myScnView removeGestureRecognizer:panGesture];
+//    [myScnView removeGestureRecognizer:pinchGesture];
+    for (UIGestureRecognizer *recognizer in myScnView.gestureRecognizers) {
+        [myScnView removeGestureRecognizer:recognizer];
+    }
     panGesture = nil;
     pinchGesture = nil;
 }
@@ -549,12 +552,22 @@ typedef NS_OPTIONS(NSUInteger, CollisionCategory) {
 - (void)addEditGesutreToBox {
     UITapGestureRecognizer *tapBox = [[UITapGestureRecognizer alloc] initWithTarget:self action:@selector(tapOnBox:)];
     [myScnView addGestureRecognizer: tapBox];
+    
+    UISwipeGestureRecognizer *swipeLeft = [[UISwipeGestureRecognizer alloc] initWithTarget:self action:@selector(swipeToLeft:)];
+    swipeLeft.direction = UISwipeGestureRecognizerDirectionLeft;
+    [myScnView addGestureRecognizer:swipeLeft];
+    
+    UISwipeGestureRecognizer *swipeRight = [[UISwipeGestureRecognizer alloc] initWithTarget:self action:@selector(swipeToRight:)];
+    swipeRight.direction = UISwipeGestureRecognizerDirectionRight;
+    [myScnView addGestureRecognizer:swipeRight];
+    
 }
 
 - (void)tapOnBox:(UITapGestureRecognizer *)gesture {
     CGPoint point = [gesture locationInView: myScnView];
     NSArray *hits = [myScnView hitTest:point
                                options:nil];
+    NSLog(@"\n\n The Array is %i", hits.count);
     for (SCNHitTestResult *hit in hits) {
         
         if ([hit.node isEqual: boxNode]) {
@@ -563,17 +576,67 @@ typedef NS_OPTIONS(NSUInteger, CollisionCategory) {
                 box_shapeIndex = 0;
             }
             hit.node.geometry = arr_shapes[box_shapeIndex];
+            boxNode.physicsBody = [SCNPhysicsBody bodyWithType:SCNPhysicsBodyTypeDynamic
+                                                          shape:[SCNPhysicsShape shapeWithGeometry:arr_shapes[box_shapeIndex]
+                                                          options:nil]];
         } else if ([hit.node isEqual: cubeNode]) {
             cube_shapeIndex++;
             if (cube_shapeIndex == 3) {
                 cube_shapeIndex = 0;
             }
             hit.node.geometry = arr_shapes[cube_shapeIndex];
+            cubeNode.physicsBody = [SCNPhysicsBody bodyWithType:SCNPhysicsBodyTypeDynamic
+                                                          shape:[SCNPhysicsShape shapeWithGeometry:arr_shapes[cube_shapeIndex]
+                                                          options:nil]];
+        } else {
+            continue;
+        }
+    }
+    
+}
+
+- (void)swipeToLeft:(UIGestureRecognizer *)swipeLeft {
+    /*
+     * Get the start point location of swipe gesture
+     */
+    CGPoint startPoint;
+    startPoint = [swipeLeft locationOfTouch:0 inView:myScnView];
+    /*
+     * Swipe to left, direction is -1
+     */
+    [self oneStepRotationOn:startPoint andDirecton:-1];
+}
+
+- (void)swipeToRight:(UISwipeGestureRecognizer *)swipeRight {
+    /*
+     * Get the start point location of swipe gesture
+     */
+    CGPoint startPoint;
+    startPoint = [swipeRight locationOfTouch:0 inView:myScnView];
+    /*
+     * Swipe to right, direction is +1
+     */
+    [self oneStepRotationOn:startPoint andDirecton:1];
+}
+
+- (void)oneStepRotationOn:(CGPoint)point andDirecton:(int)direction {
+    /*
+     * If swipe gesture is on target scene node, rotate the target
+     */
+    float   rotateAngle = M_PI_4/2 * direction;
+    NSArray *hits = [myScnView hitTest:point
+                               options:nil];
+    for (SCNHitTestResult *hit in hits) {
+        
+        if ([hit.node isEqual: boxNode]) {
+            boxNode.rotation = SCNVector4Make(0, 1, 0, boxNode.rotation.w+rotateAngle);
+        } else if ([hit.node isEqual: cubeNode]) {
+            cubeNode.rotation = SCNVector4Make(0, 1, 0, cubeNode.rotation.w+rotateAngle);
+            hit.node.geometry = arr_shapes[cube_shapeIndex];
         } else {
             return;
         }
     }
-    
 }
 
 #pragma mark View gestures
@@ -629,10 +692,10 @@ typedef NS_OPTIONS(NSUInteger, CollisionCategory) {
         cameraNode.position = SCNVector3Make(cameraX, cameraY*(1/scale), cameraZ*(1/scale));
     }
     
-    if (gesture.state == UIGestureRecognizerStateEnded) {
-        cameraY = cameraNode.position.y;
-        cameraZ = cameraNode.position.z;
-    }
+//    if (gesture.state == UIGestureRecognizerStateEnded) {
+//        cameraY = cameraNode.position.y;
+//        cameraZ = cameraNode.position.z;
+//    }
 }
 
 #pragma mark General touch methods
