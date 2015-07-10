@@ -65,9 +65,10 @@ typedef NS_OPTIONS(NSUInteger, CollisionCategory) {
     BOOL                        sizeBtn;
     BOOL                        editNode;
     NSArray                     *arr_shapes;
-    NSArray                     *arr_cameraPositions;
+    NSArray                     *arr_cameraRotation;
     int                         box_shapeIndex;
     int                         cube_shapeIndex;
+    int                         cameraRotationIndex;
 }
 // UIButtons
 @property (weak, nonatomic) IBOutlet UIButton *uib_view;
@@ -99,6 +100,8 @@ typedef NS_OPTIONS(NSUInteger, CollisionCategory) {
     [self addElementToEnvironment];
     
     [self createShapesArray];
+    
+    [self createCameraPositionArray];
 }
 
 - (void)viewWillAppear:(BOOL)animated {
@@ -128,13 +131,13 @@ typedef NS_OPTIONS(NSUInteger, CollisionCategory) {
 }
 
 - (void)createCameraPositionArray {
-    SCNVector3 position1 = SCNVector3Make(0.0, 20.0, 30.0);
-    SCNVector3 position2 = SCNVector3Make(-20.0, 20.0, 30.0);
-    SCNVector3 position3 = SCNVector3Make(0.0, 20.0, -30.0);
+    SCNVector3 position1 = SCNVector3Make(0, -M_PI_4, 0.0);
+    SCNVector3 position2 = SCNVector3Make(0.0,-1.0 * M_PI, 0.0);
+    SCNVector3 position3 = SCNVector3Make(0.0, -1.5 * M_PI , 0.0);
     NSValue *position1_value = [NSValue valueWithSCNVector3:position1];
     NSValue *position2_value = [NSValue valueWithSCNVector3:position2];
     NSValue *position3_value = [NSValue valueWithSCNVector3:position3];
-    arr_cameraPositions = @[position1_value, position2_value, position3_value];
+    arr_cameraRotation = @[position1_value, position2_value, position3_value];
 }
 
 #pragma mark - Defaul mode
@@ -551,6 +554,43 @@ typedef NS_OPTIONS(NSUInteger, CollisionCategory) {
         [self resetAllBtns];
     }
 }
+
+#pragma mark Update camera's position
+- (IBAction)tapCam1:(id)sender {
+    
+    cameraRotationIndex++;
+    if (cameraRotationIndex == 3) {
+        cameraRotationIndex = 0;
+    }
+    
+    NSValue *value = arr_cameraRotation[cameraRotationIndex];
+    SCNVector3 vector = [value SCNVector3Value];
+    NSLog(@"\n\n%f\n\n%f\n\n%f\n\n",vector.x, vector.y, vector.z);
+//    cameraOrbit.eulerAngles = vector;
+    CGFloat rotation = vector.y;
+
+    [SCNTransaction begin]; {
+        
+        CABasicAnimation *moveCamera =
+        [CABasicAnimation animationWithKeyPath:@"rotation"];
+        moveCamera.toValue = [NSValue valueWithSCNVector4:SCNVector4Make(0.0, 1.0, 0.0, rotation)];
+        moveCamera.duration  = 1.0;
+        moveCamera.fillMode  = kCAFillModeForwards;
+        moveCamera.timingFunction =
+        [CAMediaTimingFunction functionWithName:
+         kCAMediaTimingFunctionEaseInEaseOut];
+        moveCamera.removedOnCompletion = NO;
+        [cameraOrbit addAnimation:moveCamera forKey:@"test"];
+        
+        [SCNTransaction setCompletionBlock:^{
+            cameraOrbit.rotation = SCNVector4Make(0.0, 1.0, 0.0, rotation);
+            [cameraOrbit removeAllAnimations];
+            lastRotation = rotation;
+        }];
+        
+    } [SCNTransaction commit];
+}
+
 
 - (void)resetAllBtns
 {
