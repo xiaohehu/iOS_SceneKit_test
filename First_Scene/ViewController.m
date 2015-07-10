@@ -534,7 +534,8 @@ typedef NS_OPTIONS(NSUInteger, CollisionCategory) {
     if (!_uib_position.selected) {
         [self resetAllBtns];
         _uib_position.selected = YES;
-        position = YES;
+//        position = YES;
+        [self addLongPressToNodes];
     }
     else {
         [self resetAllBtns];
