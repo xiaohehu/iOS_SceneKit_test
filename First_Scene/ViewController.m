@@ -659,6 +659,7 @@ typedef NS_OPTIONS(NSUInteger, CollisionCategory) {
     } [SCNTransaction commit];
 }
 
+#pragma mark Rest position of the camera
 - (IBAction)resetCamera:(id)sender {
     
     [SCNTransaction begin]; {

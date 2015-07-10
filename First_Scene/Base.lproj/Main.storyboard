@@ -17,7 +17,14 @@
                         <rect key="frame" x="0.0" y="0.0" width="600" height="600"/>
                         <autoresizingMask key="autoresizingMask" widthSizable="YES" heightSizable="YES"/>
                         <subviews>
-                            <button opaque="NO" contentMode="scaleToFill" fixedFrame="YES" contentHorizontalAlignment="center" contentVerticalAlignment="center" buttonType="roundedRect" lineBreakMode="middleTruncation" translatesAutoresizingMaskIntoConstraints="NO" id="7Dp-aD-Mcb">
+                            <sceneKitView clipsSubviews="YES" multipleTouchEnabled="YES" contentMode="scaleToFill" translatesAutoresizingMaskIntoConstraints="NO" id="DI5-Xm-64A">
+                                <rect key="frame" x="0.0" y="58" width="600" height="542"/>
+                                <color key="backgroundColor" white="1" alpha="1" colorSpace="calibratedWhite"/>
+                                <connections>
+                                    <outlet property="delegate" destination="BYZ-38-t0r" id="Onc-RH-EcR"/>
+                                </connections>
+                            </sceneKitView>
+                            <button hidden="YES" opaque="NO" contentMode="scaleToFill" fixedFrame="YES" contentHorizontalAlignment="center" contentVerticalAlignment="center" buttonType="roundedRect" lineBreakMode="middleTruncation" translatesAutoresizingMaskIntoConstraints="NO" id="7Dp-aD-Mcb">
                                 <rect key="frame" x="16" y="20" width="81" height="30"/>
                                 <state key="normal" title="View">
                                     <color key="titleShadowColor" white="0.5" alpha="1" colorSpace="calibratedWhite"/>
@@ -26,7 +33,7 @@
                                     <action selector="tapViewBtn:" destination="BYZ-38-t0r" eventType="touchUpInside" id="Yxy-wO-f3u"/>
                                 </connections>
                             </button>
-                            <button opaque="NO" contentMode="scaleToFill" contentHorizontalAlignment="center" contentVerticalAlignment="center" buttonType="roundedRect" lineBreakMode="middleTruncation" translatesAutoresizingMaskIntoConstraints="NO" id="YIH-aN-JEe">
+                            <button hidden="YES" opaque="NO" contentMode="scaleToFill" contentHorizontalAlignment="center" contentVerticalAlignment="center" buttonType="roundedRect" lineBreakMode="middleTruncation" translatesAutoresizingMaskIntoConstraints="NO" id="YIH-aN-JEe">
                                 <rect key="frame" x="528" y="20" width="56" height="30"/>
                                 <state key="normal" title="Position">
                                     <color key="titleShadowColor" white="0.5" alpha="1" colorSpace="calibratedWhite"/>
@@ -35,7 +42,7 @@
                                     <action selector="tapPositionBtn:" destination="BYZ-38-t0r" eventType="touchUpInside" id="5bv-XC-5Ox"/>
                                 </connections>
                             </button>
-                            <button opaque="NO" contentMode="scaleToFill" contentHorizontalAlignment="center" contentVerticalAlignment="center" buttonType="roundedRect" lineBreakMode="middleTruncation" translatesAutoresizingMaskIntoConstraints="NO" id="JIW-iF-JYO">
+                            <button hidden="YES" opaque="NO" contentMode="scaleToFill" contentHorizontalAlignment="center" contentVerticalAlignment="center" buttonType="roundedRect" lineBreakMode="middleTruncation" translatesAutoresizingMaskIntoConstraints="NO" id="JIW-iF-JYO">
                                 <rect key="frame" x="16" y="562" width="76" height="30"/>
                                 <constraints>
                                     <constraint firstAttribute="height" constant="30" id="lwq-NI-UMD"/>
@@ -48,7 +55,7 @@
                                     <action selector="tapSizeBtn:" destination="BYZ-38-t0r" eventType="touchUpInside" id="usp-1e-hFj"/>
                                 </connections>
                             </button>
-                            <button opaque="NO" contentMode="scaleToFill" contentHorizontalAlignment="center" contentVerticalAlignment="center" buttonType="roundedRect" lineBreakMode="middleTruncation" translatesAutoresizingMaskIntoConstraints="NO" id="mgn-oP-64o">
+                            <button hidden="YES" opaque="NO" contentMode="scaleToFill" contentHorizontalAlignment="center" contentVerticalAlignment="center" buttonType="roundedRect" lineBreakMode="middleTruncation" translatesAutoresizingMaskIntoConstraints="NO" id="mgn-oP-64o">
                                 <rect key="frame" x="528" y="562" width="56" height="30"/>
                                 <constraints>
                                     <constraint firstAttribute="height" constant="30" id="H1g-pL-98p"/>
@@ -61,7 +68,7 @@
                                     <action selector="tapColorBtn:" destination="BYZ-38-t0r" eventType="touchUpInside" id="wKG-cu-Zlx"/>
                                 </connections>
                             </button>
-                            <button opaque="NO" contentMode="scaleToFill" contentHorizontalAlignment="center" contentVerticalAlignment="center" buttonType="roundedRect" lineBreakMode="middleTruncation" translatesAutoresizingMaskIntoConstraints="NO" id="dNc-ZP-4yp">
+                            <button hidden="YES" opaque="NO" contentMode="scaleToFill" contentHorizontalAlignment="center" contentVerticalAlignment="center" buttonType="roundedRect" lineBreakMode="middleTruncation" translatesAutoresizingMaskIntoConstraints="NO" id="dNc-ZP-4yp">
                                 <rect key="frame" x="267" y="20" width="67" height="30"/>
                                 <state key="normal" title="Free Cam">
                                     <color key="titleShadowColor" white="0.5" alpha="1" colorSpace="calibratedWhite"/>
@@ -110,14 +117,7 @@
                                     <constraint firstAttribute="height" constant="146" id="Ytp-8j-AxZ"/>
                                 </constraints>
                             </view>
-                            <sceneKitView clipsSubviews="YES" multipleTouchEnabled="YES" contentMode="scaleToFill" translatesAutoresizingMaskIntoConstraints="NO" id="DI5-Xm-64A">
-                                <rect key="frame" x="46" y="58" width="508" height="484"/>
-                                <color key="backgroundColor" white="1" alpha="1" colorSpace="calibratedWhite"/>
-                                <connections>
-                                    <outlet property="delegate" destination="BYZ-38-t0r" id="Onc-RH-EcR"/>
-                                </connections>
-                            </sceneKitView>
-                            <button opaque="NO" contentMode="scaleToFill" contentHorizontalAlignment="center" contentVerticalAlignment="center" buttonType="roundedRect" lineBreakMode="middleTruncation" translatesAutoresizingMaskIntoConstraints="NO" id="PAs-NJ-ghD">
+                            <button hidden="YES" opaque="NO" contentMode="scaleToFill" contentHorizontalAlignment="center" contentVerticalAlignment="center" buttonType="roundedRect" lineBreakMode="middleTruncation" translatesAutoresizingMaskIntoConstraints="NO" id="PAs-NJ-ghD">
                                 <rect key="frame" x="259" y="562" width="82" height="30"/>
                                 <state key="normal" title="Rotate Cam">
                                     <color key="titleShadowColor" white="0.5" alpha="1" colorSpace="calibratedWhite"/>
@@ -126,7 +126,7 @@
                                     <action selector="tapRotateCam:" destination="BYZ-38-t0r" eventType="touchUpInside" id="h2i-wc-9Kp"/>
                                 </connections>
                             </button>
-                            <button opaque="NO" contentMode="scaleToFill" fixedFrame="YES" contentHorizontalAlignment="center" contentVerticalAlignment="center" buttonType="roundedRect" lineBreakMode="middleTruncation" translatesAutoresizingMaskIntoConstraints="NO" id="nec-Fn-eWm">
+                            <button hidden="YES" opaque="NO" contentMode="scaleToFill" fixedFrame="YES" contentHorizontalAlignment="center" contentVerticalAlignment="center" buttonType="roundedRect" lineBreakMode="middleTruncation" translatesAutoresizingMaskIntoConstraints="NO" id="nec-Fn-eWm">
                                 <rect key="frame" x="152" y="20" width="46" height="30"/>
                                 <state key="normal" title="Edit">
                                     <color key="titleShadowColor" white="0.5" alpha="1" colorSpace="calibratedWhite"/>
@@ -135,17 +135,8 @@
                                     <action selector="tapEditBtn:" destination="BYZ-38-t0r" eventType="touchUpInside" id="DfK-ya-iqV"/>
                                 </connections>
                             </button>
-                            <button opaque="NO" contentMode="scaleToFill" contentHorizontalAlignment="center" contentVerticalAlignment="center" buttonType="roundedRect" lineBreakMode="middleTruncation" translatesAutoresizingMaskIntoConstraints="NO" id="VwU-z5-CLG">
-                                <rect key="frame" x="559" y="92" width="41" height="30"/>
-                                <state key="normal" title="Cam1">
-                                    <color key="titleShadowColor" white="0.5" alpha="1" colorSpace="calibratedWhite"/>
-                                </state>
-                                <connections>
-                                    <action selector="tapCam1:" destination="BYZ-38-t0r" eventType="touchUpInside" id="1MF-s5-psp"/>
-                                </connections>
-                            </button>
                             <button opaque="NO" contentMode="scaleToFill" contentHorizontalAlignment="center" contentVerticalAlignment="center" buttonType="roundedRect" lineBreakMode="middleTruncation" translatesAutoresizingMaskIntoConstraints="NO" id="bA4-re-9Zv">
-                                <rect key="frame" x="559" y="158" width="41" height="30"/>
+                                <rect key="frame" x="459" y="20" width="41" height="30"/>
                                 <state key="normal" title="Cam2">
                                     <color key="titleShadowColor" white="0.5" alpha="1" colorSpace="calibratedWhite"/>
                                 </state>
@@ -154,7 +145,7 @@
                                 </connections>
                             </button>
                             <button opaque="NO" contentMode="scaleToFill" contentHorizontalAlignment="center" contentVerticalAlignment="center" buttonType="roundedRect" lineBreakMode="middleTruncation" translatesAutoresizingMaskIntoConstraints="NO" id="swk-ok-hWd">
-                                <rect key="frame" x="562" y="211" width="40" height="30"/>
+                                <rect key="frame" x="536" y="20" width="40" height="30"/>
                                 <state key="normal" title="Reset">
                                     <color key="titleShadowColor" white="0.5" alpha="1" colorSpace="calibratedWhite"/>
                                 </state>
@@ -162,34 +153,42 @@
                                     <action selector="resetCamera:" destination="BYZ-38-t0r" eventType="touchUpInside" id="IeS-Dz-J7r"/>
                                 </connections>
                             </button>
+                            <button opaque="NO" contentMode="scaleToFill" contentHorizontalAlignment="center" contentVerticalAlignment="center" buttonType="roundedRect" lineBreakMode="middleTruncation" translatesAutoresizingMaskIntoConstraints="NO" id="VwU-z5-CLG">
+                                <rect key="frame" x="383" y="20" width="41" height="30"/>
+                                <state key="normal" title="Cam1">
+                                    <color key="titleShadowColor" white="0.5" alpha="1" colorSpace="calibratedWhite"/>
+                                </state>
+                                <connections>
+                                    <action selector="tapCam1:" destination="BYZ-38-t0r" eventType="touchUpInside" id="1MF-s5-psp"/>
+                                </connections>
+                            </button>
                         </subviews>
                         <color key="backgroundColor" white="1" alpha="1" colorSpace="custom" customColorSpace="calibratedWhite"/>
                         <constraints>
                             <constraint firstAttribute="centerX" secondItem="PAs-NJ-ghD" secondAttribute="centerX" id="1tS-zI-ESK"/>
-                            <constraint firstAttribute="centerX" secondItem="DI5-Xm-64A" secondAttribute="centerX" id="6yP-Io-Lj4"/>
+                            <constraint firstItem="VwU-z5-CLG" firstAttribute="top" secondItem="y3c-jy-aDJ" secondAttribute="bottom" id="6q4-Yh-CsL"/>
+                            <constraint firstItem="DI5-Xm-64A" firstAttribute="leading" secondItem="8bC-Xf-vdC" secondAttribute="leadingMargin" constant="-16" id="8oa-xi-uID"/>
+                            <constraint firstItem="bA4-re-9Zv" firstAttribute="top" secondItem="y3c-jy-aDJ" secondAttribute="bottom" id="9Sf-8V-O3W"/>
                             <constraint firstItem="wfy-db-euE" firstAttribute="top" secondItem="JIW-iF-JYO" secondAttribute="bottom" constant="8" id="A7Q-HP-J5i"/>
-                            <constraint firstAttribute="trailingMargin" secondItem="bA4-re-9Zv" secondAttribute="trailing" constant="-16" id="AIu-xM-QRu"/>
+                            <constraint firstItem="DI5-Xm-64A" firstAttribute="top" secondItem="y3c-jy-aDJ" secondAttribute="bottom" constant="38" id="ABv-Pc-MaU"/>
                             <constraint firstItem="DI5-Xm-64A" firstAttribute="top" secondItem="dNc-ZP-4yp" secondAttribute="bottom" constant="11" id="AOs-Zm-UtC"/>
                             <constraint firstItem="YIH-aN-JEe" firstAttribute="top" secondItem="y3c-jy-aDJ" secondAttribute="bottom" id="Act-uy-tcb"/>
-                            <constraint firstAttribute="centerY" secondItem="DI5-Xm-64A" secondAttribute="centerY" id="AdO-Ll-vfW"/>
-                            <constraint firstAttribute="trailingMargin" secondItem="swk-ok-hWd" secondAttribute="trailing" constant="-18" id="GpZ-0d-Fc6"/>
+                            <constraint firstItem="bA4-re-9Zv" firstAttribute="leading" secondItem="VwU-z5-CLG" secondAttribute="trailing" constant="35" id="Dqr-Vs-o7v"/>
                             <constraint firstItem="mgn-oP-64o" firstAttribute="top" secondItem="Qlg-0e-Jvb" secondAttribute="bottom" constant="8" id="Guy-sZ-8RM"/>
+                            <constraint firstItem="swk-ok-hWd" firstAttribute="leading" secondItem="bA4-re-9Zv" secondAttribute="trailing" constant="36" id="S7s-gu-YDY"/>
                             <constraint firstItem="dNc-ZP-4yp" firstAttribute="top" secondItem="y3c-jy-aDJ" secondAttribute="bottom" id="Sfn-n6-z1K"/>
-                            <constraint firstItem="bA4-re-9Zv" firstAttribute="top" secondItem="VwU-z5-CLG" secondAttribute="bottom" constant="36" id="XHC-u4-lvY"/>
                             <constraint firstAttribute="trailingMargin" secondItem="Qlg-0e-Jvb" secondAttribute="trailing" constant="-6" id="XbC-fZ-TdJ"/>
                             <constraint firstItem="wfy-db-euE" firstAttribute="top" secondItem="PAs-NJ-ghD" secondAttribute="bottom" constant="8" id="XxZ-bD-A8c"/>
                             <constraint firstAttribute="centerX" secondItem="dNc-ZP-4yp" secondAttribute="centerX" id="bJA-KM-1O2"/>
-                            <constraint firstAttribute="trailingMargin" secondItem="VwU-z5-CLG" secondAttribute="trailing" constant="-16" id="e0I-qv-Ofp"/>
-                            <constraint firstItem="DI5-Xm-64A" firstAttribute="top" secondItem="y3c-jy-aDJ" secondAttribute="bottom" constant="38" id="eie-8o-gCq"/>
+                            <constraint firstItem="wfy-db-euE" firstAttribute="top" secondItem="DI5-Xm-64A" secondAttribute="bottom" id="dz1-4I-gXR"/>
+                            <constraint firstAttribute="trailingMargin" secondItem="swk-ok-hWd" secondAttribute="trailing" constant="8" id="f6Z-fM-elr"/>
                             <constraint firstItem="JIW-iF-JYO" firstAttribute="leading" secondItem="8bC-Xf-vdC" secondAttribute="leadingMargin" id="fPU-lE-gJL"/>
                             <constraint firstItem="YIH-aN-JEe" firstAttribute="trailing" secondItem="8bC-Xf-vdC" secondAttribute="trailingMargin" id="fyy-Dz-rfL"/>
-                            <constraint firstAttribute="centerY" secondItem="DI5-Xm-64A" secondAttribute="centerY" constant="0.5" id="gfO-pZ-Dbl"/>
-                            <constraint firstItem="DI5-Xm-64A" firstAttribute="leading" secondItem="8bC-Xf-vdC" secondAttribute="leadingMargin" constant="30" id="hFB-Zs-PRM"/>
                             <constraint firstItem="dNc-ZP-4yp" firstAttribute="top" secondItem="y3c-jy-aDJ" secondAttribute="bottom" id="hwO-sQ-gk4"/>
                             <constraint firstItem="mgn-oP-64o" firstAttribute="trailing" secondItem="8bC-Xf-vdC" secondAttribute="trailingMargin" id="iV5-X5-SVF"/>
-                            <constraint firstItem="VwU-z5-CLG" firstAttribute="top" secondItem="y3c-jy-aDJ" secondAttribute="bottom" constant="72" id="lew-eV-RhX"/>
-                            <constraint firstItem="swk-ok-hWd" firstAttribute="top" secondItem="bA4-re-9Zv" secondAttribute="bottom" constant="23" id="vpM-wa-sTz"/>
+                            <constraint firstAttribute="trailingMargin" secondItem="DI5-Xm-64A" secondAttribute="trailing" constant="-16" id="uie-En-NWp"/>
                             <constraint firstItem="wfy-db-euE" firstAttribute="top" secondItem="mgn-oP-64o" secondAttribute="bottom" constant="8" id="wlK-cA-NvT"/>
+                            <constraint firstItem="swk-ok-hWd" firstAttribute="top" secondItem="y3c-jy-aDJ" secondAttribute="bottom" id="wub-Ew-lv8"/>
                         </constraints>
                         <variation key="default">
                             <mask key="constraints">
