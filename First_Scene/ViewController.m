@@ -131,13 +131,10 @@ typedef NS_OPTIONS(NSUInteger, CollisionCategory) {
 }
 
 - (void)createCameraPositionArray {
-    SCNVector3 position1 = SCNVector3Make(0, -M_PI_4, 0.0);
-    SCNVector3 position2 = SCNVector3Make(0.0,-1.0 * M_PI, 0.0);
-    SCNVector3 position3 = SCNVector3Make(0.0, -1.5 * M_PI , 0.0);
-    NSValue *position1_value = [NSValue valueWithSCNVector3:position1];
-    NSValue *position2_value = [NSValue valueWithSCNVector3:position2];
-    NSValue *position3_value = [NSValue valueWithSCNVector3:position3];
-    arr_cameraRotation = @[position1_value, position2_value, position3_value];
+    NSNumber *rotation1 = [NSNumber numberWithFloat:-M_PI_4];
+    NSNumber *rotation2 = [NSNumber numberWithFloat:-1.0 * M_PI];
+    NSNumber *rotation3 = [NSNumber numberWithFloat:-1.5 * M_PI];
+    arr_cameraRotation = @[rotation1, rotation2, rotation3];
 }
 
 #pragma mark - Defaul mode
@@ -172,6 +169,7 @@ typedef NS_OPTIONS(NSUInteger, CollisionCategory) {
     myScnView.scene.physicsWorld.gravity = SCNVector3Make(0.0, -1.0, 0.0);
     myScnView.scene.physicsWorld.contactDelegate = self;
     myScnView.scene.physicsWorld.timeStep = 1.0/60.0;
+    //Turn on antialiasing (it is off by default)
     myScnView.antialiasingMode = SCNAntialiasingModeMultisampling4X;
     
     UIColor *lightBlueColor = [UIColor colorWithRed:4.0/255.0
@@ -371,7 +369,7 @@ typedef NS_OPTIONS(NSUInteger, CollisionCategory) {
     cameraNode.position = SCNVector3Make(0.0, 20.0, 30.0);
     cameraNode.rotation = SCNVector4Make(1, 0, 0, -atan2(10.0, 20.0));
     cameraNode.camera.zFar = 500;
-    cameraNode.camera.zNear = 10;
+    cameraNode.camera.zNear = 0.1;
     cameraX = 0.0;
     cameraY = 20.0;
     cameraZ = 30.0;
@@ -559,16 +557,14 @@ typedef NS_OPTIONS(NSUInteger, CollisionCategory) {
 #pragma mark Update camera's rotation around Y
 - (IBAction)tapCam1:(id)sender {
     
+    // Change index to load different angles
     cameraRotationIndex++;
     if (cameraRotationIndex == 3) {
         cameraRotationIndex = 0;
     }
     
-    NSValue *value = arr_cameraRotation[cameraRotationIndex];
-    SCNVector3 vector = [value SCNVector3Value];
-    NSLog(@"\n\n%f\n\n%f\n\n%f\n\n",vector.x, vector.y, vector.z);
-//    cameraOrbit.eulerAngles = vector;
-    CGFloat rotation = vector.y;
+    NSNumber *value = arr_cameraRotation[cameraRotationIndex];
+    CGFloat rotation = [value floatValue];
 
     [SCNTransaction begin]; {
         
@@ -580,10 +576,15 @@ typedef NS_OPTIONS(NSUInteger, CollisionCategory) {
         moveCamera.timingFunction =
         [CAMediaTimingFunction functionWithName:
          kCAMediaTimingFunctionEaseInEaseOut];
+        // Keep the final state after animation
         moveCamera.removedOnCompletion = NO;
-        [cameraOrbit addAnimation:moveCamera forKey:@"test"];
+        [cameraOrbit addAnimation:moveCamera forKey:@"rotaion"];
         
         [SCNTransaction setCompletionBlock:^{
+            /*
+             * Set cameraOrbit's rotation by code and remove animation to make enable interactive
+             * Record current rotation of the cameraOrbit
+             */
             cameraOrbit.rotation = SCNVector4Make(0.0, 1.0, 0.0, rotation);
             [cameraOrbit removeAllAnimations];
             lastRotation = rotation;
@@ -595,11 +596,11 @@ typedef NS_OPTIONS(NSUInteger, CollisionCategory) {
 #pragma mark Update camera's position
 - (IBAction)tapCam2:(id)sender {
     
-//    cameraNode.position = SCNVector3Make(0.0, 20.0, 30.0);
-//    cameraNode.rotation = SCNVector4Make(1, 0, 0, -atan2(10.0, 20.0));
-    
     [SCNTransaction begin]; {
-        
+        /*
+         * Check the current rotation of cameraOrbit
+         * If the cameraObit is changed, make it go back to original place
+         */
         if (lastRotation != 0) {
             CABasicAnimation *moveCamera =
             [CABasicAnimation animationWithKeyPath:@"rotation"];
@@ -612,10 +613,12 @@ typedef NS_OPTIONS(NSUInteger, CollisionCategory) {
             moveCamera.removedOnCompletion = NO;
             [cameraOrbit addAnimation:moveCamera forKey:@"test"];
         }
-        
+        /*
+         * Change the positon of the camera
+         */
         CABasicAnimation *moveCamera =
         [CABasicAnimation animationWithKeyPath:@"position"];
-        moveCamera.toValue = [NSValue valueWithSCNVector3:SCNVector3Make(10.0, 0.0, 30.0)];
+        moveCamera.toValue = [NSValue valueWithSCNVector3:SCNVector3Make(10.0, 2.0, 30.0)];
         moveCamera.duration  = 1.0;
         moveCamera.fillMode  = kCAFillModeForwards;
         moveCamera.timingFunction =
@@ -623,7 +626,9 @@ typedef NS_OPTIONS(NSUInteger, CollisionCategory) {
          kCAMediaTimingFunctionEaseInEaseOut];
         moveCamera.removedOnCompletion = NO;
         [cameraNode addAnimation:moveCamera forKey:@"change_position"];
-        
+        /*
+         * Rotate camera (NOT THE ORBIT)
+         */
         CABasicAnimation *rotateCamera =
         [CABasicAnimation animationWithKeyPath:@"rotation"];
         rotateCamera.toValue = [NSValue valueWithSCNVector4:SCNVector4Make(1, 0, 0, atan2(10.0, 20.0))];
@@ -636,7 +641,13 @@ typedef NS_OPTIONS(NSUInteger, CollisionCategory) {
         [cameraNode addAnimation:rotateCamera forKey:@"rotate_camera"];
         
         [SCNTransaction setCompletionBlock:^{
-            cameraNode.position = SCNVector3Make(10.0, 0.0, 30.0);
+            /*
+             * Set camera's position and rotation by code
+             * Set cameraOrbit's rotation by code
+             * Remove animation effect to make whole scene view enable to interaction
+             * Set cameraOrbit's rotation record to 0
+             */
+            cameraNode.position = SCNVector3Make(10.0, 2.0, 30.0);
             cameraNode.rotation = SCNVector4Make(1, 0, 0, atan2(10.0, 20.0));
             cameraOrbit.rotation = SCNVector4Make(0.0, 1.0, 0.0, 0.0);
             [cameraNode removeAllAnimations];
@@ -647,6 +658,65 @@ typedef NS_OPTIONS(NSUInteger, CollisionCategory) {
     } [SCNTransaction commit];
 }
 
+- (IBAction)resetCamera:(id)sender {
+    
+    [SCNTransaction begin]; {
+    
+    CABasicAnimation *moveCameraOrbit =
+    [CABasicAnimation animationWithKeyPath:@"rotation"];
+    moveCameraOrbit.toValue = [NSValue valueWithSCNVector4:SCNVector4Make(0.0, 1.0, 0.0, 0)];
+    moveCameraOrbit.duration  = 1.0;
+    moveCameraOrbit.fillMode  = kCAFillModeForwards;
+    moveCameraOrbit.timingFunction =
+    [CAMediaTimingFunction functionWithName:
+     kCAMediaTimingFunctionEaseInEaseOut];
+    moveCameraOrbit.removedOnCompletion = NO;
+    [cameraOrbit addAnimation:moveCameraOrbit forKey:@"test"];
+    /*
+     * Change the positon of the camera
+     */
+    CABasicAnimation *moveCamera =
+    [CABasicAnimation animationWithKeyPath:@"position"];
+    moveCamera.toValue = [NSValue valueWithSCNVector3:SCNVector3Make(0.0, 20.0, 30.0)];
+    moveCamera.duration  = 1.0;
+    moveCamera.fillMode  = kCAFillModeForwards;
+    moveCamera.timingFunction =
+    [CAMediaTimingFunction functionWithName:
+     kCAMediaTimingFunctionEaseInEaseOut];
+    moveCamera.removedOnCompletion = NO;
+    [cameraNode addAnimation:moveCamera forKey:@"change_position"];
+    /*
+     * Rotate camera (NOT THE ORBIT)
+     */
+    CABasicAnimation *rotateCamera =
+    [CABasicAnimation animationWithKeyPath:@"rotation"];
+    rotateCamera.toValue = [NSValue valueWithSCNVector4:SCNVector4Make(1, 0, 0, -atan2(10.0, 20.0))];
+    rotateCamera.duration  = 1.0;
+    rotateCamera.fillMode  = kCAFillModeForwards;
+    rotateCamera.timingFunction =
+    [CAMediaTimingFunction functionWithName:
+     kCAMediaTimingFunctionEaseInEaseOut];
+    rotateCamera.removedOnCompletion = NO;
+    [cameraNode addAnimation:rotateCamera forKey:@"rotate_camera"];
+    
+    [SCNTransaction setCompletionBlock:^{
+        /*
+         * Set camera's position and rotation by code
+         * Set cameraOrbit's rotation by code
+         * Remove animation effect to make whole scene view enable to interaction
+         * Set cameraOrbit's rotation record to 0
+         */
+        cameraNode.position = SCNVector3Make(0.0, 20.0, 30.0);
+        cameraNode.rotation = SCNVector4Make(1, 0, 0, -atan2(10.0, 20.0));
+        cameraOrbit.rotation = SCNVector4Make(0.0, 1.0, 0.0, 0.0);
+        [cameraNode removeAllAnimations];
+        [cameraOrbit removeAllAnimations];
+        lastRotation = 0;
+    }];
+    
+} [SCNTransaction commit];
+
+}
 
 - (void)resetAllBtns
 {

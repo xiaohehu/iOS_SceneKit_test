@@ -153,6 +153,15 @@
                                     <action selector="tapCam2:" destination="BYZ-38-t0r" eventType="touchUpInside" id="mMo-Cr-7Pm"/>
                                 </connections>
                             </button>
+                            <button opaque="NO" contentMode="scaleToFill" contentHorizontalAlignment="center" contentVerticalAlignment="center" buttonType="roundedRect" lineBreakMode="middleTruncation" translatesAutoresizingMaskIntoConstraints="NO" id="swk-ok-hWd">
+                                <rect key="frame" x="562" y="211" width="40" height="30"/>
+                                <state key="normal" title="Reset">
+                                    <color key="titleShadowColor" white="0.5" alpha="1" colorSpace="calibratedWhite"/>
+                                </state>
+                                <connections>
+                                    <action selector="resetCamera:" destination="BYZ-38-t0r" eventType="touchUpInside" id="IeS-Dz-J7r"/>
+                                </connections>
+                            </button>
                         </subviews>
                         <color key="backgroundColor" white="1" alpha="1" colorSpace="custom" customColorSpace="calibratedWhite"/>
                         <constraints>
@@ -163,6 +172,7 @@
                             <constraint firstItem="DI5-Xm-64A" firstAttribute="top" secondItem="dNc-ZP-4yp" secondAttribute="bottom" constant="11" id="AOs-Zm-UtC"/>
                             <constraint firstItem="YIH-aN-JEe" firstAttribute="top" secondItem="y3c-jy-aDJ" secondAttribute="bottom" id="Act-uy-tcb"/>
                             <constraint firstAttribute="centerY" secondItem="DI5-Xm-64A" secondAttribute="centerY" id="AdO-Ll-vfW"/>
+                            <constraint firstAttribute="trailingMargin" secondItem="swk-ok-hWd" secondAttribute="trailing" constant="-18" id="GpZ-0d-Fc6"/>
                             <constraint firstItem="mgn-oP-64o" firstAttribute="top" secondItem="Qlg-0e-Jvb" secondAttribute="bottom" constant="8" id="Guy-sZ-8RM"/>
                             <constraint firstItem="dNc-ZP-4yp" firstAttribute="top" secondItem="y3c-jy-aDJ" secondAttribute="bottom" id="Sfn-n6-z1K"/>
                             <constraint firstItem="bA4-re-9Zv" firstAttribute="top" secondItem="VwU-z5-CLG" secondAttribute="bottom" constant="36" id="XHC-u4-lvY"/>
@@ -178,6 +188,7 @@
                             <constraint firstItem="dNc-ZP-4yp" firstAttribute="top" secondItem="y3c-jy-aDJ" secondAttribute="bottom" id="hwO-sQ-gk4"/>
                             <constraint firstItem="mgn-oP-64o" firstAttribute="trailing" secondItem="8bC-Xf-vdC" secondAttribute="trailingMargin" id="iV5-X5-SVF"/>
                             <constraint firstItem="VwU-z5-CLG" firstAttribute="top" secondItem="y3c-jy-aDJ" secondAttribute="bottom" constant="72" id="lew-eV-RhX"/>
+                            <constraint firstItem="swk-ok-hWd" firstAttribute="top" secondItem="bA4-re-9Zv" secondAttribute="bottom" constant="23" id="vpM-wa-sTz"/>
                             <constraint firstItem="wfy-db-euE" firstAttribute="top" secondItem="mgn-oP-64o" secondAttribute="bottom" constant="8" id="wlK-cA-NvT"/>
                         </constraints>
                         <variation key="default">
