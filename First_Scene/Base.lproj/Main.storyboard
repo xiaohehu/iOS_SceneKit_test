@@ -149,6 +149,9 @@
                                 <state key="normal" title="Cam2">
                                     <color key="titleShadowColor" white="0.5" alpha="1" colorSpace="calibratedWhite"/>
                                 </state>
+                                <connections>
+                                    <action selector="tapCam2:" destination="BYZ-38-t0r" eventType="touchUpInside" id="mMo-Cr-7Pm"/>
+                                </connections>
                             </button>
                         </subviews>
                         <color key="backgroundColor" white="1" alpha="1" colorSpace="custom" customColorSpace="calibratedWhite"/>

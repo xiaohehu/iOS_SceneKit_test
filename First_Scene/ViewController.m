@@ -172,6 +172,7 @@ typedef NS_OPTIONS(NSUInteger, CollisionCategory) {
     myScnView.scene.physicsWorld.gravity = SCNVector3Make(0.0, -1.0, 0.0);
     myScnView.scene.physicsWorld.contactDelegate = self;
     myScnView.scene.physicsWorld.timeStep = 1.0/60.0;
+    myScnView.antialiasingMode = SCNAntialiasingModeMultisampling4X;
     
     UIColor *lightBlueColor = [UIColor colorWithRed:4.0/255.0
                                               green:120.0/255.0
@@ -555,7 +556,7 @@ typedef NS_OPTIONS(NSUInteger, CollisionCategory) {
     }
 }
 
-#pragma mark Update camera's position
+#pragma mark Update camera's rotation around Y
 - (IBAction)tapCam1:(id)sender {
     
     cameraRotationIndex++;
@@ -586,6 +587,61 @@ typedef NS_OPTIONS(NSUInteger, CollisionCategory) {
             cameraOrbit.rotation = SCNVector4Make(0.0, 1.0, 0.0, rotation);
             [cameraOrbit removeAllAnimations];
             lastRotation = rotation;
+        }];
+        
+    } [SCNTransaction commit];
+}
+
+#pragma mark Update camera's position
+- (IBAction)tapCam2:(id)sender {
+    
+//    cameraNode.position = SCNVector3Make(0.0, 20.0, 30.0);
+//    cameraNode.rotation = SCNVector4Make(1, 0, 0, -atan2(10.0, 20.0));
+    
+    [SCNTransaction begin]; {
+        
+        if (lastRotation != 0) {
+            CABasicAnimation *moveCamera =
+            [CABasicAnimation animationWithKeyPath:@"rotation"];
+            moveCamera.toValue = [NSValue valueWithSCNVector4:SCNVector4Make(0.0, 1.0, 0.0, 0)];
+            moveCamera.duration  = 1.0;
+            moveCamera.fillMode  = kCAFillModeForwards;
+            moveCamera.timingFunction =
+            [CAMediaTimingFunction functionWithName:
+             kCAMediaTimingFunctionEaseInEaseOut];
+            moveCamera.removedOnCompletion = NO;
+            [cameraOrbit addAnimation:moveCamera forKey:@"test"];
+        }
+        
+        CABasicAnimation *moveCamera =
+        [CABasicAnimation animationWithKeyPath:@"position"];
+        moveCamera.toValue = [NSValue valueWithSCNVector3:SCNVector3Make(10.0, 0.0, 30.0)];
+        moveCamera.duration  = 1.0;
+        moveCamera.fillMode  = kCAFillModeForwards;
+        moveCamera.timingFunction =
+        [CAMediaTimingFunction functionWithName:
+         kCAMediaTimingFunctionEaseInEaseOut];
+        moveCamera.removedOnCompletion = NO;
+        [cameraNode addAnimation:moveCamera forKey:@"change_position"];
+        
+        CABasicAnimation *rotateCamera =
+        [CABasicAnimation animationWithKeyPath:@"rotation"];
+        rotateCamera.toValue = [NSValue valueWithSCNVector4:SCNVector4Make(1, 0, 0, atan2(10.0, 20.0))];
+        rotateCamera.duration  = 1.0;
+        rotateCamera.fillMode  = kCAFillModeForwards;
+        rotateCamera.timingFunction =
+        [CAMediaTimingFunction functionWithName:
+         kCAMediaTimingFunctionEaseInEaseOut];
+        rotateCamera.removedOnCompletion = NO;
+        [cameraNode addAnimation:rotateCamera forKey:@"rotate_camera"];
+        
+        [SCNTransaction setCompletionBlock:^{
+            cameraNode.position = SCNVector3Make(10.0, 0.0, 30.0);
+            cameraNode.rotation = SCNVector4Make(1, 0, 0, atan2(10.0, 20.0));
+            cameraOrbit.rotation = SCNVector4Make(0.0, 1.0, 0.0, 0.0);
+            [cameraNode removeAllAnimations];
+            [cameraOrbit removeAllAnimations];
+            lastRotation = 0;
         }];
         
     } [SCNTransaction commit];
