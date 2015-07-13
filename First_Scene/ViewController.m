@@ -197,7 +197,7 @@ typedef NS_OPTIONS(NSUInteger, CollisionCategory) {
     // A plane on X-Z coordinates as floor
     // ------------------
     floor = [SCNPlane planeWithWidth:50 height:50];
-    floor.firstMaterial.diffuse.contents = [UIColor lightGrayColor];
+    floor.firstMaterial.diffuse.contents = [UIImage imageNamed:@"sample.png"];//[UIColor lightGrayColor];
     floor.firstMaterial.lightingModelName = SCNLightingModelConstant;
     floorNode = [SCNNode nodeWithGeometry:floor];
     floorNode.position = SCNVector3Make(0, 0, 0);
@@ -210,13 +210,13 @@ typedef NS_OPTIONS(NSUInteger, CollisionCategory) {
     // A plane on Y-Z coordinates left as left wall
     // ------------------
     leftWall = [SCNPlane planeWithWidth:50 height:50];
-    leftWall.firstMaterial.diffuse.contents = [UIColor clearColor];
+    leftWall.firstMaterial.diffuse.contents = [UIColor redColor];
     leftWall.firstMaterial.lightingModelName = SCNLightingModelConstant;
     leftWallNode = [SCNNode nodeWithGeometry:leftWall];
     leftWallNode.rotation = SCNVector4Make(0, 1, 0, M_PI_2);
     leftWallNode.position = SCNVector3Make(-25, 0, 0);
     leftWallNode.physicsBody = [SCNPhysicsBody bodyWithType:SCNPhysicsBodyTypeStatic shape:[SCNPhysicsShape shapeWithGeometry:leftWall options:nil]];
-    leftWallNode.physicsBody.physicsShape = [SCNPhysicsShape shapeWithGeometry:leftWall options:nil];
+//    leftWallNode.physicsBody.physicsShape = [SCNPhysicsShape shapeWithGeometry:leftWall options:nil];
     leftWallNode.physicsBody.restitution = 0.0;
     leftWallNode.physicsBody.angularDamping = 1.0;
     [scene.rootNode addChildNode:leftWallNode];
@@ -224,13 +224,13 @@ typedef NS_OPTIONS(NSUInteger, CollisionCategory) {
     // A plane on Y-Z coordinates right as right wall
     // ------------------
     rightWall = [SCNPlane planeWithWidth:50 height:50];
-    rightWall.firstMaterial.diffuse.contents = [UIColor clearColor];
+    rightWall.firstMaterial.diffuse.contents = [UIColor blackColor];
     rightWall.firstMaterial.lightingModelName = SCNLightingModelConstant;
     rightWallNode = [SCNNode nodeWithGeometry:rightWall];
     rightWallNode.rotation = SCNVector4Make(0, 1, 0, -M_PI_2);
     rightWallNode.position = SCNVector3Make(25, 0, 0);
     rightWallNode.physicsBody = [SCNPhysicsBody bodyWithType:SCNPhysicsBodyTypeStatic shape:[SCNPhysicsShape shapeWithGeometry:rightWall options:nil]];
-    rightWallNode.physicsBody.physicsShape = [SCNPhysicsShape shapeWithGeometry:rightWall options:nil];
+//    rightWallNode.physicsBody.physicsShape = [SCNPhysicsShape shapeWithGeometry:rightWall options:nil];
     rightWallNode.pivot = SCNMatrix4MakeTranslation(0.0, 0.0, 0.0);
     [scene.rootNode addChildNode:rightWallNode];
     
@@ -242,7 +242,7 @@ typedef NS_OPTIONS(NSUInteger, CollisionCategory) {
     backWallNode = [SCNNode nodeWithGeometry:backWall];
     backWallNode.position = SCNVector3Make(0, 0, -25);
     backWallNode.physicsBody = [SCNPhysicsBody bodyWithType:SCNPhysicsBodyTypeStatic shape:[SCNPhysicsShape shapeWithGeometry:backWall options:nil]];
-    backWallNode.physicsBody.physicsShape = [SCNPhysicsShape shapeWithGeometry:backWall options:nil];
+//    backWallNode.physicsBody.physicsShape = [SCNPhysicsShape shapeWithGeometry:backWall options:nil];
     backWallNode.pivot = SCNMatrix4MakeTranslation(0.0, 0.0, 0.0);
     [scene.rootNode addChildNode:backWallNode];
     
@@ -254,7 +254,7 @@ typedef NS_OPTIONS(NSUInteger, CollisionCategory) {
     frontWallNode = [SCNNode nodeWithGeometry:frontWall];
     frontWallNode.position = SCNVector3Make(0, 0, 25);
     frontWallNode.physicsBody = [SCNPhysicsBody bodyWithType:SCNPhysicsBodyTypeStatic shape:[SCNPhysicsShape shapeWithGeometry:frontWall options:nil]];
-    frontWallNode.physicsBody.physicsShape = [SCNPhysicsShape shapeWithGeometry:frontWall options:nil];
+//    frontWallNode.physicsBody.physicsShape = [SCNPhysicsShape shapeWithGeometry:frontWall options:nil];
     frontWallNode.pivot = SCNMatrix4MakeTranslation(0.0, 0.0, 0.0);
     [scene.rootNode addChildNode:frontWallNode];
     
@@ -767,8 +767,11 @@ typedef NS_OPTIONS(NSUInteger, CollisionCategory) {
     [self resetCubeAndWallsBody];
         for (SCNHitTestResult *hit in hits) {
             
-            if ([hit.node isEqual:boxNode] && gesture.state == UIGestureRecognizerStateBegan) {
-                boxNode.opacity = 0.6;
+            if (([hit.node isEqual:boxNode] || [hit.node isEqual:cubeNode]) && gesture.state == UIGestureRecognizerStateBegan) {
+//                boxNode.opacity = 0.6;
+                hit.node.opacity = 0.6;
+//                tappedNode = hit.node;
+//                tappedNode.opacity = 0.6;
             }
             
             if ([hit.node isEqual:boxNode] && gesture.state == UIGestureRecognizerStateChanged) {
@@ -779,16 +782,20 @@ typedef NS_OPTIONS(NSUInteger, CollisionCategory) {
                 SCNVector3 prevLocation_3d = [myScnView unprojectPoint:SCNVector3Make(boxNode.position.x, boxNode.position.y, hitPositionZ)];
                 CGFloat x_varible = location_3d.x - prevLocation_3d.x;
                 CGFloat z_varible = location_3d.z - prevLocation_3d.z;
-                NSLog(@"The x varible is %f", x_varible);
+//                NSLog(@"The x varible is %f", x_varible);
                 if (ABS(x_varible) > 5) {
                     boxNode.position = SCNVector3Make(prevLocation_3d.x + x_varible, boxNode.position.y, prevLocation_3d.z+z_varible);
                 }
 //                NSLog(@"The point is %@", NSStringFromCGPoint(point));
             }
+        
+            if (gesture.state == UIGestureRecognizerStateEnded) {
+                //        boxNode.opacity = 1.0;
+//                tappedNode.opacity = 1.0;
+                hit.node.opacity = 1.0;
+            }
+            
         }
-    if (gesture.state == UIGestureRecognizerStateEnded) {
-        boxNode.opacity = 1.0;
-    }
 }
 
 #pragma mark Edit cube gesutres
@@ -1096,7 +1103,7 @@ typedef NS_OPTIONS(NSUInteger, CollisionCategory) {
 
 - (void)touchesEnded:(NSSet *)touches withEvent:(UIEvent *)event
 {
-    [self resetCubeAndWallsBody];
+//    [self resetCubeAndWallsBody];
     
     if (rotateCam) {
         
@@ -1184,6 +1191,28 @@ typedef NS_OPTIONS(NSUInteger, CollisionCategory) {
     cubeNode.physicsBody.angularVelocityFactor = SCNVector3Make(0.0, 1.0, 0.0);
     cubeNode.physicsBody.friction = 1.0;
     floorNode.physicsBody.friction = 1.0;
+    
+//    /*
+//     * Set up collision bit masks to box and all walls
+//     */
+//    leftWallNode.physicsBody.categoryBitMask = CollisionCategoryWall;
+//    rightWallNode.physicsBody.categoryBitMask = CollisionCategoryWall;
+//    backWallNode.physicsBody.categoryBitMask = CollisionCategoryWall;
+//    frontWallNode.physicsBody.categoryBitMask = CollisionCategoryWall;
+//    boxNode.physicsBody.categoryBitMask = CollisionCategoryBox;
+//    cubeNode.physicsBody.categoryBitMask = CollisionCategoryCube;
+//    cube_blockNode.physicsBody.categoryBitMask = CollisionCategoryCubeBlock;
+//    
+//    leftWallNode.physicsBody.collisionBitMask = CollisionCategoryBox | CollisionCategoryCube;
+//    rightWallNode.physicsBody.collisionBitMask = CollisionCategoryBox | CollisionCategoryCube;
+//    backWallNode.physicsBody.collisionBitMask = CollisionCategoryBox | CollisionCategoryCube;
+//    frontWallNode.physicsBody.collisionBitMask = CollisionCategoryBox | CollisionCategoryCube;
+//    boxNode.physicsBody.collisionBitMask = CollisionCategoryWall | CollisionCategoryCube | CollisionCategoryCubeBlock;
+//    cubeNode.physicsBody.collisionBitMask = CollisionCategoryWall| CollisionCategoryBox | CollisionCategoryCubeBlock;
+}
+
+- (void)physicsWorld:(SCNPhysicsWorld *)world didBeginContact:(SCNPhysicsContact * )contact {
+    NSLog(@"\n\n There's contact");
 }
 
 @end
