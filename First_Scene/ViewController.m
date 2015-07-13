@@ -91,6 +91,10 @@ typedef NS_OPTIONS(NSUInteger, CollisionCategory) {
 @synthesize myScnView;
 
 #pragma mark - ViewController Life-cycle
+- (BOOL)prefersStatusBarHidden {
+    return YES;
+}
+
 - (void)viewDidLoad {
     
     [super viewDidLoad];
