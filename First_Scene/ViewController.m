@@ -21,10 +21,10 @@ typedef NS_OPTIONS(NSUInteger, CollisionCategory) {
     SCNBox                      *box;
     SCNBox                      *cube;
     SCNBox                      *cube_block;
-    SCNPlane                    *leftWall;
-    SCNPlane                    *rightWall;
+    SCNBox                    *leftWall;
+    SCNBox                    *rightWall;
     SCNPlane                    *backWall;
-    SCNPlane                    *frontWall;
+    SCNBox                    *frontWall;
     SCNPlane                    *floor;
     SCNText                     *boxText;
     SCNLight                    *light;
@@ -209,12 +209,12 @@ typedef NS_OPTIONS(NSUInteger, CollisionCategory) {
     
     // A plane on Y-Z coordinates left as left wall
     // ------------------
-    leftWall = [SCNPlane planeWithWidth:50 height:50];
+    leftWall = [SCNBox boxWithWidth:50 height:50 length:10 chamferRadius:0.0];
     leftWall.firstMaterial.diffuse.contents = [UIColor redColor];
     leftWall.firstMaterial.lightingModelName = SCNLightingModelConstant;
     leftWallNode = [SCNNode nodeWithGeometry:leftWall];
     leftWallNode.rotation = SCNVector4Make(0, 1, 0, M_PI_2);
-    leftWallNode.position = SCNVector3Make(-25, 0, 0);
+    leftWallNode.position = SCNVector3Make(-30, 0, 0);
     leftWallNode.physicsBody = [SCNPhysicsBody bodyWithType:SCNPhysicsBodyTypeStatic shape:[SCNPhysicsShape shapeWithGeometry:leftWall options:nil]];
 //    leftWallNode.physicsBody.physicsShape = [SCNPhysicsShape shapeWithGeometry:leftWall options:nil];
     leftWallNode.physicsBody.restitution = 0.0;
@@ -223,12 +223,12 @@ typedef NS_OPTIONS(NSUInteger, CollisionCategory) {
     
     // A plane on Y-Z coordinates right as right wall
     // ------------------
-    rightWall = [SCNPlane planeWithWidth:50 height:50];
+    rightWall = [SCNBox boxWithWidth:50 height:50 length:10 chamferRadius:0.0];
     rightWall.firstMaterial.diffuse.contents = [UIColor blackColor];
     rightWall.firstMaterial.lightingModelName = SCNLightingModelConstant;
     rightWallNode = [SCNNode nodeWithGeometry:rightWall];
     rightWallNode.rotation = SCNVector4Make(0, 1, 0, -M_PI_2);
-    rightWallNode.position = SCNVector3Make(25, 0, 0);
+    rightWallNode.position = SCNVector3Make(30, 0, 0);
     rightWallNode.physicsBody = [SCNPhysicsBody bodyWithType:SCNPhysicsBodyTypeStatic shape:[SCNPhysicsShape shapeWithGeometry:rightWall options:nil]];
 //    rightWallNode.physicsBody.physicsShape = [SCNPhysicsShape shapeWithGeometry:rightWall options:nil];
     rightWallNode.pivot = SCNMatrix4MakeTranslation(0.0, 0.0, 0.0);
@@ -237,7 +237,7 @@ typedef NS_OPTIONS(NSUInteger, CollisionCategory) {
     // A plane on X-Y coordinates back as back wall
     // ------------------
     backWall = [SCNPlane planeWithWidth:50 height:50];
-    backWall.firstMaterial.diffuse.contents = [UIColor clearColor];
+    backWall.firstMaterial.diffuse.contents = [UIColor blueColor];
     backWall.firstMaterial.lightingModelName = SCNLightingModelConstant;
     backWallNode = [SCNNode nodeWithGeometry:backWall];
     backWallNode.position = SCNVector3Make(0, 0, -25);
@@ -248,11 +248,11 @@ typedef NS_OPTIONS(NSUInteger, CollisionCategory) {
     
     // A plane on X-Y coordinates front as front wall
     // ------------------
-    frontWall = [SCNPlane planeWithWidth:50 height:50];
+    frontWall = [SCNBox boxWithWidth:50 height:50 length:10 chamferRadius:0.0];
     frontWall.firstMaterial.diffuse.contents = [UIColor clearColor];
     frontWall.firstMaterial.lightingModelName = SCNLightingModelConstant;
     frontWallNode = [SCNNode nodeWithGeometry:frontWall];
-    frontWallNode.position = SCNVector3Make(0, 0, 25);
+    frontWallNode.position = SCNVector3Make(0, 0, 30);
     frontWallNode.physicsBody = [SCNPhysicsBody bodyWithType:SCNPhysicsBodyTypeStatic shape:[SCNPhysicsShape shapeWithGeometry:frontWall options:nil]];
 //    frontWallNode.physicsBody.physicsShape = [SCNPhysicsShape shapeWithGeometry:frontWall options:nil];
     frontWallNode.pivot = SCNMatrix4MakeTranslation(0.0, 0.0, 0.0);
@@ -370,7 +370,7 @@ typedef NS_OPTIONS(NSUInteger, CollisionCategory) {
      */
     cameraNode = [SCNNode node];
     cameraNode.camera = [SCNCamera camera];
-    cameraNode.position = SCNVector3Make(0.0, 20.0, 30.0);
+    cameraNode.position = SCNVector3Make(0.0, 20.0, 50.0);
     cameraNode.rotation = SCNVector4Make(1, 0, 0, -atan2(10.0, 20.0));
     cameraNode.camera.zFar = 500;
     cameraNode.camera.zNear = 0.1;
@@ -538,7 +538,7 @@ typedef NS_OPTIONS(NSUInteger, CollisionCategory) {
     if (!_uib_position.selected) {
         [self resetAllBtns];
         _uib_position.selected = YES;
-//        position = YES;
+        position = YES;
         [self addLongPressToNodes];
     }
     else {
@@ -683,7 +683,7 @@ typedef NS_OPTIONS(NSUInteger, CollisionCategory) {
      */
     CABasicAnimation *moveCamera =
     [CABasicAnimation animationWithKeyPath:@"position"];
-    moveCamera.toValue = [NSValue valueWithSCNVector3:SCNVector3Make(0.0, 20.0, 30.0)];
+    moveCamera.toValue = [NSValue valueWithSCNVector3:SCNVector3Make(0.0, 20.0, 50.0)];
     moveCamera.duration  = 1.0;
     moveCamera.fillMode  = kCAFillModeForwards;
     moveCamera.timingFunction =
@@ -768,10 +768,7 @@ typedef NS_OPTIONS(NSUInteger, CollisionCategory) {
         for (SCNHitTestResult *hit in hits) {
             
             if (([hit.node isEqual:boxNode] || [hit.node isEqual:cubeNode]) && gesture.state == UIGestureRecognizerStateBegan) {
-//                boxNode.opacity = 0.6;
                 hit.node.opacity = 0.6;
-//                tappedNode = hit.node;
-//                tappedNode.opacity = 0.6;
             }
             
             if ([hit.node isEqual:boxNode] && gesture.state == UIGestureRecognizerStateChanged) {
@@ -782,20 +779,23 @@ typedef NS_OPTIONS(NSUInteger, CollisionCategory) {
                 SCNVector3 prevLocation_3d = [myScnView unprojectPoint:SCNVector3Make(boxNode.position.x, boxNode.position.y, hitPositionZ)];
                 CGFloat x_varible = location_3d.x - prevLocation_3d.x;
                 CGFloat z_varible = location_3d.z - prevLocation_3d.z;
-//                NSLog(@"The x varible is %f", x_varible);
-                if (ABS(x_varible) > 5) {
-                    boxNode.position = SCNVector3Make(prevLocation_3d.x + x_varible, boxNode.position.y, prevLocation_3d.z+z_varible);
+                if (ABS(x_varible) > 10) {
+                    if (prevLocation_3d.z+z_varible > 19) {
+                        boxNode.position = SCNVector3Make(prevLocation_3d.x + x_varible, boxNode.position.y, boxNode.position.z);
+                        return;
+                    } else {
+                        boxNode.position = SCNVector3Make(prevLocation_3d.x + x_varible, boxNode.position.y, prevLocation_3d.z+z_varible);
+                    }
+                    
                 }
-//                NSLog(@"The point is %@", NSStringFromCGPoint(point));
             }
         
             if (gesture.state == UIGestureRecognizerStateEnded) {
-                //        boxNode.opacity = 1.0;
-//                tappedNode.opacity = 1.0;
                 hit.node.opacity = 1.0;
             }
             
         }
+//    position = YES;
 }
 
 #pragma mark Edit cube gesutres
@@ -1036,23 +1036,23 @@ typedef NS_OPTIONS(NSUInteger, CollisionCategory) {
 //            if (z_varible < 0) {
 //                boxNode.physicsBody.velocity = SCNVector3Make(0.0, 0.0, -100.0);
 //            }
+            NSLog(@"positionpoistionpositionposition");
             
-            
-//            boxNode.physicsBody.velocity = SCNVector3Make(x_varible*80, 0.0, z_varible*80);
+            boxNode.physicsBody.velocity = SCNVector3Make(x_varible*80, 0.0, z_varible*80);
             
             /*
              * !!!!TEMP!!!!
              * IF POSITION IS TURNED ON BY DEFAULT:
              * AVOID CONFILICTION WITH PAN GESTURE TO ROTATE THE CAMERA
              */
-            CGPoint point = [touch locationInView: myScnView];
-            // Get the hit on the cube
-            NSArray *hits = [myScnView hitTest:point options:nil];
-            for (SCNHitTestResult *hit in hits) {
-                if ([hit.node isEqual:boxNode]) {
-                    boxNode.physicsBody.velocity = SCNVector3Make(x_varible*80, 0.0, z_varible*80);
-                }
-            }
+//            CGPoint point = [touch locationInView: myScnView];
+//            // Get the hit on the cube
+//            NSArray *hits = [myScnView hitTest:point options:nil];
+//            for (SCNHitTestResult *hit in hits) {
+//                if ([hit.node isEqual:boxNode]) {
+//                    boxNode.physicsBody.velocity = SCNVector3Make(x_varible*80, 0.0, z_varible*80);
+//                }
+//            }
         }
     }
     
@@ -1212,7 +1212,12 @@ typedef NS_OPTIONS(NSUInteger, CollisionCategory) {
 }
 
 - (void)physicsWorld:(SCNPhysicsWorld *)world didBeginContact:(SCNPhysicsContact * )contact {
-    NSLog(@"\n\n There's contact");
+    if ([contact.nodeA isEqual: boxNode]) {
+        if ([contact.nodeB isEqual: frontWallNode]) {
+            NSLog(@"\n\n There's contact");
+            [contact.nodeA.physicsBody clearAllForces];
+        }
+    }
 }
 
 @end
