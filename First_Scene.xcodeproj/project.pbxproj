@@ -9,6 +9,12 @@
 /* Begin PBXBuildFile section */
 		8228A3771B30A38C004EEA62 /* SpriteKit.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 8228A3761B30A38C004EEA62 /* SpriteKit.framework */; };
 		824B9B751B54451B006C58DF /* sample.png in Resources */ = {isa = PBXBuildFile; fileRef = 824B9B741B54451B006C58DF /* sample.png */; };
+		824B9B7C1B5579CA006C58DF /* Building_00A.DAE in Resources */ = {isa = PBXBuildFile; fileRef = 824B9B761B5579CA006C58DF /* Building_00A.DAE */; };
+		824B9B7D1B5579CA006C58DF /* Building_00B.DAE in Resources */ = {isa = PBXBuildFile; fileRef = 824B9B771B5579CA006C58DF /* Building_00B.DAE */; };
+		824B9B7E1B5579CA006C58DF /* Building_01A.DAE in Resources */ = {isa = PBXBuildFile; fileRef = 824B9B781B5579CA006C58DF /* Building_01A.DAE */; };
+		824B9B7F1B5579CA006C58DF /* Building_01B.DAE in Resources */ = {isa = PBXBuildFile; fileRef = 824B9B791B5579CA006C58DF /* Building_01B.DAE */; };
+		824B9B801B5579CA006C58DF /* Building_02.DAE in Resources */ = {isa = PBXBuildFile; fileRef = 824B9B7A1B5579CA006C58DF /* Building_02.DAE */; };
+		824B9B811B5579CA006C58DF /* GoogleEarth.DAE in Resources */ = {isa = PBXBuildFile; fileRef = 824B9B7B1B5579CA006C58DF /* GoogleEarth.DAE */; };
 		82C835EB1B26356700DCFE1D /* main.m in Sources */ = {isa = PBXBuildFile; fileRef = 82C835EA1B26356700DCFE1D /* main.m */; };
 		82C835EE1B26356700DCFE1D /* AppDelegate.m in Sources */ = {isa = PBXBuildFile; fileRef = 82C835ED1B26356700DCFE1D /* AppDelegate.m */; };
 		82C835F11B26356700DCFE1D /* ViewController.m in Sources */ = {isa = PBXBuildFile; fileRef = 82C835F01B26356700DCFE1D /* ViewController.m */; };
@@ -32,6 +38,12 @@
 /* Begin PBXFileReference section */
 		8228A3761B30A38C004EEA62 /* SpriteKit.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = SpriteKit.framework; path = System/Library/Frameworks/SpriteKit.framework; sourceTree = SDKROOT; };
 		824B9B741B54451B006C58DF /* sample.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; path = sample.png; sourceTree = "<group>"; };
+		824B9B761B5579CA006C58DF /* Building_00A.DAE */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text.xml.dae; path = Building_00A.DAE; sourceTree = "<group>"; };
+		824B9B771B5579CA006C58DF /* Building_00B.DAE */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text.xml.dae; path = Building_00B.DAE; sourceTree = "<group>"; };
+		824B9B781B5579CA006C58DF /* Building_01A.DAE */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text.xml.dae; path = Building_01A.DAE; sourceTree = "<group>"; };
+		824B9B791B5579CA006C58DF /* Building_01B.DAE */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text.xml.dae; path = Building_01B.DAE; sourceTree = "<group>"; };
+		824B9B7A1B5579CA006C58DF /* Building_02.DAE */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text.xml.dae; path = Building_02.DAE; sourceTree = "<group>"; };
+		824B9B7B1B5579CA006C58DF /* GoogleEarth.DAE */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text.xml.dae; path = GoogleEarth.DAE; sourceTree = "<group>"; };
 		82C835E51B26356700DCFE1D /* First_Scene.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = First_Scene.app; sourceTree = BUILT_PRODUCTS_DIR; };
 		82C835E91B26356700DCFE1D /* Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist.xml; path = Info.plist; sourceTree = "<group>"; };
 		82C835EA1B26356700DCFE1D /* main.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = main.m; sourceTree = "<group>"; };
@@ -97,6 +109,12 @@
 				82C835F01B26356700DCFE1D /* ViewController.m */,
 				82C835F21B26356700DCFE1D /* Main.storyboard */,
 				824B9B741B54451B006C58DF /* sample.png */,
+				824B9B761B5579CA006C58DF /* Building_00A.DAE */,
+				824B9B771B5579CA006C58DF /* Building_00B.DAE */,
+				824B9B781B5579CA006C58DF /* Building_01A.DAE */,
+				824B9B791B5579CA006C58DF /* Building_01B.DAE */,
+				824B9B7A1B5579CA006C58DF /* Building_02.DAE */,
+				824B9B7B1B5579CA006C58DF /* GoogleEarth.DAE */,
 				82C835F51B26356700DCFE1D /* Images.xcassets */,
 				82C835F71B26356700DCFE1D /* LaunchScreen.xib */,
 				82C835E81B26356700DCFE1D /* Supporting Files */,
@@ -211,10 +229,16 @@
 			isa = PBXResourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				824B9B7F1B5579CA006C58DF /* Building_01B.DAE in Resources */,
 				82C835F41B26356700DCFE1D /* Main.storyboard in Resources */,
+				824B9B7C1B5579CA006C58DF /* Building_00A.DAE in Resources */,
+				824B9B7E1B5579CA006C58DF /* Building_01A.DAE in Resources */,
+				824B9B811B5579CA006C58DF /* GoogleEarth.DAE in Resources */,
 				82C835F91B26356700DCFE1D /* LaunchScreen.xib in Resources */,
+				824B9B801B5579CA006C58DF /* Building_02.DAE in Resources */,
 				82C835F61B26356700DCFE1D /* Images.xcassets in Resources */,
 				824B9B751B54451B006C58DF /* sample.png in Resources */,
+				824B9B7D1B5579CA006C58DF /* Building_00B.DAE in Resources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};

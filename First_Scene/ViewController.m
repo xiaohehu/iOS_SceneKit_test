@@ -207,6 +207,11 @@ typedef NS_OPTIONS(NSUInteger, CollisionCategory) {
     floorNode.physicsBody.friction = 0.5;
     [scene.rootNode addChildNode:floorNode];
     
+//    NSURL *sceneURL = [[NSBundle mainBundle] URLForResource:@"GoogleEarth" withExtension:@"DAE"];
+//    SCNSceneSource *sceneSource = [SCNSceneSource sceneSourceWithURL:sceneURL options:nil];
+//    floorNode = [sceneSource entryWithIdentifier:@"floor" withClass:[SCNNode class]];
+//    [scene.rootNode addChildNode:floorNode];
+    
     // A plane on Y-Z coordinates left as left wall
     // ------------------
     leftWall = [SCNBox boxWithWidth:50 height:50 length:10 chamferRadius:0.0];
@@ -780,6 +785,9 @@ typedef NS_OPTIONS(NSUInteger, CollisionCategory) {
                 CGFloat x_varible = location_3d.x - prevLocation_3d.x;
                 CGFloat z_varible = location_3d.z - prevLocation_3d.z;
                 if (ABS(x_varible) > 10) {
+                    /*
+                     * 
+                     */
                     if (prevLocation_3d.z+z_varible > 19) {
                         boxNode.position = SCNVector3Make(prevLocation_3d.x + x_varible, boxNode.position.y, boxNode.position.z);
                         return;
